@@ -1,6 +1,15 @@
 @extends('vatpac.layout')
 
 @section('content')
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:title" content="VATPAC - Iron Mic Leaderboard">
+    <meta property="og:description"
+        content="Event Position Tracker for the Iron Mic hosted by VATPAC in 2026">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+
 <p>See all the airports participating in the VATPAC Iron Mic Event occuring on [ROHAN I NEED THE DATE]</p>
 
 {{-- Airport Views --}}

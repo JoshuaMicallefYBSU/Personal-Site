@@ -156,7 +156,125 @@
         <div class="card mt-4">
             <div class="card-body">
                 <h4 class="card-title">Controller Totals</h4>
-            </div>
+
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="controllers-tab" data-toggle="tab" href="#s1">S1</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" id="positions-tab" data-toggle="tab" href="#s2">S2</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" id="facility-tab" data-toggle="tab" href="#s3">S3</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" id="facility-tab" data-toggle="tab" href="#other">C1/C3/I1/I3</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" id="facility-tab" data-toggle="tab" href="#totals">Totals</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content mt-3">
+                    <div class="tab-pane fade show active" id="s1">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                            <tr>
+                                <th width="40%">CID / Name</th>
+                                <th width="30%">Total Time</th>
+                                <th width="30%">Total</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr>  
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="tab-pane fade show" id="s2">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                            <tr>
+                                <th width="40%">CID / Name</th>
+                                <th width="30%">Total Time</th>
+                                <th width="30%">Total</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr>  
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="tab-pane fade show" id="s3">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                            <tr>
+                                <th width="40%">CID / Name</th>
+                                <th width="30%">Total Time</th>
+                                <th width="30%">Total</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr>  
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="tab-pane fade show" id="other">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                            <tr>
+                                <th width="40%">CID / Name</th>
+                                <th width="30%">Total Time</th>
+                                <th width="30%">Total</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr>  
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="tab-pane fade show" id="totals">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                            <tr>
+                                <th width="40%">CID / Name</th>
+                                <th width="30%">Total Time</th>
+                                <th width="30%">Total</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr>  
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
         </div>
     </div>
 </div>

@@ -10,6 +10,6 @@ Route::get('/', function () {
 // VATPAC Section
 Route::prefix('vatpac')->group(function () {
     Route::prefix('events')->group(function () {
-        Route::get('airport', [VATPACController::class, 'ironMicView'])->name('vatpac.events.ironmic');
+        Route::get('iron-mic-leaderboard', [VATPACController::class, 'ironMicView'])->name('vatpac.events.ironmic');
     });
 });

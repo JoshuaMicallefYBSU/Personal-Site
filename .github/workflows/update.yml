@@ -31,6 +31,7 @@ jobs:
         exclude: |
           **/.git/**
           **/.github/**
+          qfa100.org/**
           horizontutoring.com.au/**
           ozbays.xyz/**
           ozacars.xyz/**

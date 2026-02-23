@@ -3,14 +3,16 @@ on:
   push:
     branches:
       - main
+
 jobs:
   web-deploy:
     name: 🎉 Deploy Program
     runs-on: ubuntu-latest
+
     steps:
     - name: 🚚 Get latest code
       uses: actions/checkout@v2
-    
+
     - name: 📂 Sync GitHub & Server Files
       uses: SamKirkland/FTP-Deploy-Action@4.3.3
       with:
@@ -18,6 +20,17 @@ jobs:
         username: personalsite@joshuamicallef.xyz
         password: ${{ secrets.FTP_PASSWORD }}
         timeout: 120000
-        server-dir: 
+
+        # ✅ DO NOT leave this blank
+        server-dir: /public_html/
+
+        # ✅ don't wipe the destination
         dangerous-clean-slate: false
-        clean: false
+
+        # ✅ protect other sites/folders from being touched
+        exclude: |
+          **/.git/**
+          **/.github/**
+          horizontutoring.com.au/**
+          ozbays.xyz/**
+          ozacars.xyz/**

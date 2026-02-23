@@ -18,4 +18,4 @@ jobs:
         username: personalsite@joshuamicallef.xyz
         password: ${{ secrets.FTP_PASSWORD }}
         timeout: 120000
-        server-dir: 
+        server-dir: /

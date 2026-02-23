@@ -19,7 +19,4 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         timeout: 120000
         server-dir: 
-        exclude: |
-          **/ozbays.xyz/**
-          **/ozacars.xyz/**
-          **/horizontutoring.com.au/**
+        dangerous-clean-slate: false

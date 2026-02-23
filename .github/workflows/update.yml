@@ -22,7 +22,7 @@ jobs:
         timeout: 120000
 
         # ✅ DO NOT leave this blank
-        server-dir: /public_html/
+        server-dir: /
 
         # ✅ don't wipe the destination
         dangerous-clean-slate: false

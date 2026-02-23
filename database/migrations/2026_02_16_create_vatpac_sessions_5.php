@@ -15,8 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('callsign');
             $table->unsignedBigInteger('user');
-            $table->timestamp('logged_on');
-            $table->timestamp('logged_off')->nullable();
+            $table->string('ICAO');
+            $table->integer('rating');
+            $table->datetime('logged_on');
+            $table->datetime('logged_off')->nullable();
+            $table->boolean('still_connected')->default(false);
             $table->string('time_logged')->nullable();
             $table->timestamps();
 

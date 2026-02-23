@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('vatpac_users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('rating');
             $table->timestamps();
         });
     }

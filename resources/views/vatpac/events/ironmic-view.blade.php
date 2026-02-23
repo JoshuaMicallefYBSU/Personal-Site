@@ -64,15 +64,27 @@
                                 <tr>
                                     <th width="40%">CID / Name</th>
                                     <th width="30%">Total Time</th>
-                                    <th width="30%">Total</th>
+                                    <th width="30%">Iron Mic Time</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>  
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
+                                    @foreach($users as $user)                                            
+                                        @php
+                                            $rating = 2;
+                                            $details = $user->airportControllerTotals($airport->ICAO, $user->id, $rating);
+                                        @endphp
+
+                                        {{-- Exit Loop if no sessions --}}
+                                        @if($details == null)
+                                            @continue;
+                                        @endif
+
+                                        <tr>  
+                                            <td>{{$user->id}}</td>
+                                            <td>{{$details['time']}}</td>
+                                            <td></td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -83,15 +95,27 @@
                                 <tr>
                                     <th width="40%">CID / Name</th>
                                     <th width="30%">Total Time</th>
-                                    <th width="30%">Total</th>
+                                    <th width="30%">Iron Mic Time</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>  
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
+                                    @foreach($users as $user)                                            
+                                        @php
+                                            $rating = 3;
+                                            $details = $user->airportControllerTotals($airport->ICAO, $user->id, $rating);
+                                        @endphp
+
+                                        {{-- Exit Loop if no sessions --}}
+                                        @if($details == null)
+                                            @continue;
+                                        @endif
+
+                                        <tr>  
+                                            <td>{{$user->id}}</td>
+                                            <td>{{$details['time']}}</td>
+                                            <td></td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -102,14 +126,28 @@
                                 <tr>
                                     <th width="40%">CID / Name</th>
                                     <th width="30%">Total Time</th>
-                                    <th width="30%">Total</th>
+                                    <th width="30%">Iron Mic Time</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                     <tr>  
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        @foreach($users as $user)                                            
+                                        @php
+                                            $rating = 4;
+                                            $details = $user->airportControllerTotals($airport->ICAO, $user->id, $rating);
+                                        @endphp
+
+                                        {{-- Exit Loop if no sessions --}}
+                                        @if($details == null)
+                                            @continue;
+                                        @endif
+
+                                        <tr>  
+                                            <td>{{$user->id}}</td>
+                                            <td>{{$details['time']}}</td>
+                                            <td></td>
+                                        </tr>
+                                        @endforeach
                                     </tr>
                                 </tbody>
                             </table>
@@ -121,14 +159,28 @@
                                 <tr>
                                     <th width="40%">CID / Name</th>
                                     <th width="30%">Total Time</th>
-                                    <th width="30%">Total</th>
+                                    <th width="30%">Iron Mic Time</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                     <tr>  
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        @foreach($users as $user)                                            
+                                        @php
+                                            $rating = 5;
+                                            $details = $user->airportControllerTotals($airport->ICAO, $user->id, $rating);
+                                        @endphp
+
+                                        {{-- Exit Loop if no sessions --}}
+                                        @if($details == null)
+                                            @continue;
+                                        @endif
+
+                                        <tr>  
+                                            <td>{{$user->id}}</td>
+                                            <td>{{$details['time']}}</td>
+                                            <td></td>
+                                        </tr>
+                                        @endforeach
                                     </tr>
                                 </tbody>
                             </table>
@@ -140,7 +192,7 @@
                                 <tr>
                                     <th width="40%">CID / Name</th>
                                     <th width="30%">Total Time</th>
-                                    <th width="30%">Total</th>
+                                    <th width="30%">Iron Mic Time</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -195,7 +247,7 @@
                             <tr>
                                 <th width="40%">CID / Name</th>
                                 <th width="30%">Total Time</th>
-                                <th width="30%">Total</th>
+                                <th width="30%">Iron Mic Time</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -214,7 +266,7 @@
                             <tr>
                                 <th width="40%">CID / Name</th>
                                 <th width="30%">Total Time</th>
-                                <th width="30%">Total</th>
+                                <th width="30%">Iron Mic Time</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -233,7 +285,7 @@
                             <tr>
                                 <th width="40%">CID / Name</th>
                                 <th width="30%">Total Time</th>
-                                <th width="30%">Total</th>
+                                <th width="30%">Iron Mic Time</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -252,7 +304,7 @@
                             <tr>
                                 <th width="40%">CID / Name</th>
                                 <th width="30%">Total Time</th>
-                                <th width="30%">Total</th>
+                                <th width="30%">Iron Mic Time</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -271,7 +323,7 @@
                             <tr>
                                 <th width="40%">CID / Name</th>
                                 <th width="30%">Total Time</th>
-                                <th width="30%">Total</th>
+                                <th width="30%">Iron Mic Time</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -284,9 +336,40 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mt-4">
+            <div class="card-body">
+                <h4 class="card-title">Currently Connected</h4>
+                <p>Shows a complete list of all current connected users</p>
+
+                    <div class="tab-pane fade show" id="totals">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                            <tr>
+                                <th width="40%">Callsign</th>
+                                <th width="30%">CID</th>
+                                <th width="30%">Time</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($online as $session)
+                                <tr>  
+                                    <td>{{$session->callsign}}</td>
+                                    <td>{{$session->user}}</td>
+                                    <td>{{$session->loggedTime($session->logged_on)}}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
 
 @endsection

@@ -17,21 +17,7 @@ jobs:
       uses: SamKirkland/FTP-Deploy-Action@4.3.3
       with:
         server: sg2plzcpnl486124.prod.sin2.secureserver.net
-        username: personalsite@joshuamicallef.xyz
+        username: personalsite@ozacars.xyz
         password: ${{ secrets.FTP_PASSWORD }}
         timeout: 120000
-
-        # ✅ DO NOT leave this blank
-        server-dir: /
-
-        # ✅ don't wipe the destination
-        dangerous-clean-slate: false
-
-        # ✅ protect other sites/folders from being touched
-        exclude: |
-          **/.git/**
-          **/.github/**
-          qfa100.org/**
-          horizontutoring.com.au/**
-          ozbays.xyz/**
-          ozacars.xyz/**
+        server-dir: joshuamicallef.xyz/

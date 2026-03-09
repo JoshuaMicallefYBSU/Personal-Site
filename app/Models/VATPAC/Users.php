@@ -15,7 +15,7 @@ class Users extends Model
         'id',
     ];
 
-    public function airportControllerTotals($icao, $cid, $rating)
+    public function airportRatingTotals($icao, $cid, $rating)
     {
         
         $time = 0;
@@ -41,6 +41,34 @@ class Users extends Model
         $time_info = $h_time->cascade()->forHumans(['short' => true]);
 
         $info = [
+            'time' => $time_info,
+        ];
+
+        return $info;
+    }
+
+    public function airportControllerTotals($icao, $cid)
+    {
+        $time = 0;
+
+        $sessions = Sessions::where('ICAO', $icao)->where('user', $cid)->whereNotNull('time_logged')->get();
+        
+        if($sessions->isEmpty()){
+            $info = null;
+            return $info;
+        } else {
+            $info = [];
+        }
+        
+        foreach($sessions as $session){
+            $time += $session->time_logged;
+        }
+
+        $h_time = CarbonInterval::seconds($time * 3600);
+        $time_info = $h_time->cascade()->forHumans(['short' => true]);
+
+        $info = [
+            'calced_time' => $time,
             'time' => $time_info,
         ];
 

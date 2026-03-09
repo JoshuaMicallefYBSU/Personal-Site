@@ -10,7 +10,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
 
-<p>See all the airports participating in the VATPAC Iron Mic Event occuring between the 20th-23rd of March, 2026!/p>
+<p>See all the airports participating in the VATPAC Iron Mic Event occuring between the 20th-23rd of March, 2026!</p>
 
 {{-- Airport Views --}}
 <div class="row">
@@ -32,24 +32,59 @@
                             <u>ENR Callsign</u><br>{{$airport->enroute_regex}}
                         </div>
                     </div>
+
+                    @php
+                    $s1Count = 0;
+                    $s2Count = 0;
+                    $s3Count = 0;
+                    $c1Count = 0;
+                    $totalCount = 0;
+
+                    foreach($users as $user){
+                        $details = $user->airportRatingTotals($airport->ICAO, $user->id, 2);
+                        if($details != null){
+                            $s1Count++;
+                        }
+
+                        $details = $user->airportRatingTotals($airport->ICAO, $user->id, 3);
+                        if($details != null){
+                            $s2Count++;
+                        }
+
+                        $details = $user->airportRatingTotals($airport->ICAO, $user->id, 4);
+                        if($details != null){
+                            $s3Count++;
+                        }
+
+                        $details = $user->airportRatingTotals($airport->ICAO, $user->id, 5);
+                        if($details != null){
+                            $c1Count++;
+                        }
+
+                        $details = $user->airportControllerTotals($airport->ICAO, $user->id);
+                        if($details != null){
+                            $totalCount++;
+                        }
+                    }
+                    @endphp
                     
                     
 
                     <ul class="nav nav-tabs">
                         <li class="nav-item">
-                            <a class="nav-link active" id="controllers-tab" data-toggle="tab" href="#{{$airport->ICAO}}-s1">S1</a>
+                            <a class="nav-link active" id="controllers-tab" data-toggle="tab" href="#{{$airport->ICAO}}-s1">S1 ({{$s1Count}})</a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" id="positions-tab" data-toggle="tab" href="#{{$airport->ICAO}}-s2">S2</a>
+                            <a class="nav-link" id="positions-tab" data-toggle="tab" href="#{{$airport->ICAO}}-s2">S2 ({{$s2Count}})</a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" id="facility-tab" data-toggle="tab" href="#{{$airport->ICAO}}-s3">S3</a>
+                            <a class="nav-link" id="facility-tab" data-toggle="tab" href="#{{$airport->ICAO}}-s3">S3 ({{$s3Count}})</a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" id="facility-tab" data-toggle="tab" href="#{{$airport->ICAO}}-other">C1/C3/I1/I3</a>
+                            <a class="nav-link" id="facility-tab" data-toggle="tab" href="#{{$airport->ICAO}}-other">C1/C3/I1/I3 ({{$c1Count}})</a>
                         </li>
 
                         <li class="nav-item">
@@ -71,7 +106,7 @@
                                     @foreach($users as $user)                                            
                                         @php
                                             $rating = 2;
-                                            $details = $user->airportControllerTotals($airport->ICAO, $user->id, $rating);
+                                            $details = $user->airportRatingTotals($airport->ICAO, $user->id, $rating);
                                         @endphp
 
                                         {{-- Exit Loop if no sessions --}}
@@ -102,7 +137,7 @@
                                     @foreach($users as $user)                                            
                                         @php
                                             $rating = 3;
-                                            $details = $user->airportControllerTotals($airport->ICAO, $user->id, $rating);
+                                            $details = $user->airportRatingTotals($airport->ICAO, $user->id, $rating);
                                         @endphp
 
                                         {{-- Exit Loop if no sessions --}}
@@ -134,7 +169,7 @@
                                         @foreach($users as $user)                                            
                                         @php
                                             $rating = 4;
-                                            $details = $user->airportControllerTotals($airport->ICAO, $user->id, $rating);
+                                            $details = $user->airportRatingTotals($airport->ICAO, $user->id, $rating);
                                         @endphp
 
                                         {{-- Exit Loop if no sessions --}}
@@ -167,7 +202,7 @@
                                         @foreach($users as $user)                                            
                                         @php
                                             $rating = 5;
-                                            $details = $user->airportControllerTotals($airport->ICAO, $user->id, $rating);
+                                            $details = $user->airportRatingTotals($airport->ICAO, $user->id, $rating);
                                         @endphp
 
                                         {{-- Exit Loop if no sessions --}}
@@ -214,6 +249,9 @@
 
     @endforeach
 </div>
+
+<br>
+<hr>
 
 <div class="row">
     <div class="col-md-6">

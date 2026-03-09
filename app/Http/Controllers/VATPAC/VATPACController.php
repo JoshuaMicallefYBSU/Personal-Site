@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\VATPAC;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\VATPAC\Airports;
 use App\Models\VATPAC\Users;

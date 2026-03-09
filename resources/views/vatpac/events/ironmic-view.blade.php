@@ -10,7 +10,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
 
-<p>See all the airports participating in the VATPAC Iron Mic Event occuring on [ROHAN I NEED THE DATE]</p>
+<p>See all the airports participating in the VATPAC Iron Mic Event occuring between the 20th-23rd of March, 2026!/p>
 
 {{-- Airport Views --}}
 <div class="row">
@@ -196,10 +196,13 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>  
+                                    {{-- <tr>  
                                         <td></td>
                                         <td></td>
                                         <td></td>
+                                    </tr> --}}
+                                    <tr>
+                                        <td>Totals Currently Disabled - Coming soon</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -217,6 +220,7 @@
         <div class="card mt-4">
             <div class="card-body">
                 <h4 class="card-title">Controller Totals</h4>
+                <p>This section is presently disabled. Coming in a future update</p>
 
                 <ul class="nav nav-tabs">
                     <li class="nav-item">

@@ -5,6 +5,7 @@ namespace App\Models\VATPAC;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
+use App\Models\VATPAC\Users;
 
 class Sessions extends Model
 {
@@ -27,14 +28,8 @@ class Sessions extends Model
         'still_connected' => 'boolean',
     ];
 
-    public function loggedTime($logon)
+    public function vatpac_user()
     {
-        // return $logon;
-        return Carbon::parse($logon)->utc()->diffForHumans(
-        now(),
-        true,   // removes "ago"
-        false,  // short syntax off (keeps words)
-        2       // show 2 time parts (hour + minutes)
-    );
+        return $this->belongsTo(Users::class, 'user', 'id');
     }
 }

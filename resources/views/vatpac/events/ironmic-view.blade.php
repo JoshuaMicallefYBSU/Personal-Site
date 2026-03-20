@@ -15,239 +15,184 @@
 {{-- Airport Views --}}
 <div class="row">
     @foreach($airports as $airport)
+    @php
+        $airportData = $final_data[$airport->ICAO] ?? [
+            'ratings' => [
+                'S1' => 0,
+                'S2' => 0,
+                'S3' => 0,
+                'C1+' => 0,
+            ],
+            'controllers' => [],
+        ];
 
-        <div class="col-md-6">
-            <div class="card mt-4">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h4 class="card-title">{{$airport->ICAO}} - {{$airport->Name}}</h4>
-                        </div>
+        $controllers = $airportData['controllers'];
+    @endphp
 
-                        <div class="col-md-3" style="font-size: 10px;">
-                            <u>AD Callsign</u><br>{{$airport->aerodrome_regex}}
-                        </div>
-
-                        <div class="col-md-3" style="font-size: 10px;">
-                            <u>ENR Callsign</u><br>{{$airport->enroute_regex}}
-                        </div>
+    <div class="col-md-6">
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="card-title">{{ $airport->ICAO }} - {{ $airport->Name }}</h4>
                     </div>
 
-                    @php
-                    $s1Count = 0;
-                    $s2Count = 0;
-                    $s3Count = 0;
-                    $c1Count = 0;
-                    $totalCount = 0;
+                    <div class="col-md-3" style="font-size: 10px;">
+                        <u>AD Callsign</u><br>{{ $airport->aerodrome_regex }}
+                    </div>
 
-                    foreach($users as $user){
-                        $details = $user->airportRatingTotals($airport->ICAO, $user->id, 2);
-                        if($details != null){
-                            $s1Count++;
-                        }
+                    <div class="col-md-3" style="font-size: 10px;">
+                        <u>ENR Callsign</u><br>{{ $airport->enroute_regex }}
+                    </div>
+                </div>
 
-                        $details = $user->airportRatingTotals($airport->ICAO, $user->id, 3);
-                        if($details != null){
-                            $s2Count++;
-                        }
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#{{ $airport->ICAO }}-s1">
+                            S1 ({{ $airportData['ratings']['S1'] ?? 0 }})
+                        </a>
+                    </li>
 
-                        $details = $user->airportRatingTotals($airport->ICAO, $user->id, 4);
-                        if($details != null){
-                            $s3Count++;
-                        }
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#{{ $airport->ICAO }}-s2">
+                            S2 ({{ $airportData['ratings']['S2'] ?? 0 }})
+                        </a>
+                    </li>
 
-                        $details = $user->airportRatingTotals($airport->ICAO, $user->id, 5);
-                        if($details != null){
-                            $c1Count++;
-                        }
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#{{ $airport->ICAO }}-s3">
+                            S3 ({{ $airportData['ratings']['S3'] ?? 0 }})
+                        </a>
+                    </li>
 
-                        $details = $user->airportControllerTotals($airport->ICAO, $user->id);
-                        if($details != null){
-                            $totalCount++;
-                        }
-                    }
-                    @endphp
-                    
-                    
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#{{ $airport->ICAO }}-other">
+                            C1/C3/I1/I3 ({{ $airportData['ratings']['C1+'] ?? 0 }})
+                        </a>
+                    </li>
+                </ul>
 
-                    <ul class="nav nav-tabs">
-                        <li class="nav-item">
-                            <a class="nav-link active" id="controllers-tab" data-toggle="tab" href="#{{$airport->ICAO}}-s1">S1 ({{$s1Count}})</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" id="positions-tab" data-toggle="tab" href="#{{$airport->ICAO}}-s2">S2 ({{$s2Count}})</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" id="facility-tab" data-toggle="tab" href="#{{$airport->ICAO}}-s3">S3 ({{$s3Count}})</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" id="facility-tab" data-toggle="tab" href="#{{$airport->ICAO}}-other">C1/C3/I1/I3 ({{$c1Count}})</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" id="facility-tab" data-toggle="tab" href="#{{$airport->ICAO}}-totals">Totals</a>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content mt-3">
-                        <div class="tab-pane fade show active" id="{{$airport->ICAO}}-s1">
-                            <table class="table" style="text-align: center; font-size: 12px;">
-                                <thead>
+                <div class="tab-content mt-3">
+                    {{-- S1 --}}
+                    <div class="tab-pane fade show active" id="{{ $airport->ICAO }}-s1">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
                                 <tr>
                                     <th width="40%">CID / Name</th>
                                     <th width="30%">Total Time</th>
                                     <th width="30%">Iron Mic Time</th>
                                 </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($users as $user)                                            
-                                        @php
-                                            $rating = 2;
-                                            $details = $user->airportRatingTotals($airport->ICAO, $user->id, $rating);
-                                        @endphp
-
-                                        {{-- Exit Loop if no sessions --}}
-                                        @if($details == null)
-                                            @continue;
-                                        @endif
-
-                                        <tr>  
-                                            <td>{{$user->id}}</td>
-                                            <td>{{$details['time']}}</td>
-                                            <td></td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="tab-pane fade show" id="{{$airport->ICAO}}-s2">
-                            <table class="table" style="text-align: center; font-size: 12px;">
-                                <thead>
-                                <tr>
-                                    <th width="40%">CID / Name</th>
-                                    <th width="30%">Total Time</th>
-                                    <th width="30%">Iron Mic Time</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($users as $user)                                            
-                                        @php
-                                            $rating = 3;
-                                            $details = $user->airportRatingTotals($airport->ICAO, $user->id, $rating);
-                                        @endphp
-
-                                        {{-- Exit Loop if no sessions --}}
-                                        @if($details == null)
-                                            @continue;
-                                        @endif
-
-                                        <tr>  
-                                            <td>{{$user->id}}</td>
-                                            <td>{{$details['time']}}</td>
-                                            <td></td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="tab-pane fade show" id="{{$airport->ICAO}}-s3">
-                            <table class="table" style="text-align: center; font-size: 12px;">
-                                <thead>
-                                <tr>
-                                    <th width="40%">CID / Name</th>
-                                    <th width="30%">Total Time</th>
-                                    <th width="30%">Iron Mic Time</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>  
-                                        @foreach($users as $user)                                            
-                                        @php
-                                            $rating = 4;
-                                            $details = $user->airportRatingTotals($airport->ICAO, $user->id, $rating);
-                                        @endphp
-
-                                        {{-- Exit Loop if no sessions --}}
-                                        @if($details == null)
-                                            @continue;
-                                        @endif
-
-                                        <tr>  
-                                            <td>{{$user->id}}</td>
-                                            <td>{{$details['time']}}</td>
-                                            <td></td>
-                                        </tr>
-                                        @endforeach
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="tab-pane fade show" id="{{$airport->ICAO}}-other">
-                            <table class="table" style="text-align: center; font-size: 12px;">
-                                <thead>
-                                <tr>
-                                    <th width="40%">CID / Name</th>
-                                    <th width="30%">Total Time</th>
-                                    <th width="30%">Iron Mic Time</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>  
-                                        @foreach($users as $user)                                            
-                                        @php
-                                            $rating = 5;
-                                            $details = $user->airportRatingTotals($airport->ICAO, $user->id, $rating);
-                                        @endphp
-
-                                        {{-- Exit Loop if no sessions --}}
-                                        @if($details == null)
-                                            @continue;
-                                        @endif
-
-                                        <tr>  
-                                            <td>{{$user->id}}</td>
-                                            <td>{{$details['time']}}</td>
-                                            <td></td>
-                                        </tr>
-                                        @endforeach
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="tab-pane fade show" id="{{$airport->ICAO}}-totals">
-                            <table class="table" style="text-align: center; font-size: 12px;">
-                                <thead>
-                                <tr>
-                                    <th width="40%">CID / Name</th>
-                                    <th width="30%">Total Time</th>
-                                    <th width="30%">Iron Mic Time</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                    {{-- <tr>  
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr> --}}
+                            </thead>
+                            <tbody>
+                                @forelse($controllers as $controller)
+                                    @if($controller['rating'] !== 'S1')
+                                        @continue
+                                    @endif
                                     <tr>
-                                        <td>Totals Currently Disabled - Coming soon</td>
+                                        <td>{{ $controller['cid'] }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
                                     </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                @empty
+                                    <tr>
+                                        <td colspan="3">No controllers found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{-- S2 --}}
+                    <div class="tab-pane fade" id="{{ $airport->ICAO }}-s2">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th width="40%">CID / Name</th>
+                                    <th width="30%">Total Time</th>
+                                    <th width="30%">Iron Mic Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($controllers as $controller)
+                                    @if($controller['rating'] !== 'S2')
+                                        @continue
+                                    @endif
+                                    <tr>
+                                        <td>{{ $controller['cid'] }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3">No controllers found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{-- S3 --}}
+                    <div class="tab-pane fade" id="{{ $airport->ICAO }}-s3">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th width="40%">CID / Name</th>
+                                    <th width="30%">Total Time</th>
+                                    <th width="30%">Iron Mic Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($controllers as $controller)
+                                    @if($controller['rating'] !== 'S3')
+                                        @continue
+                                    @endif
+                                    <tr>
+                                        <td>{{ $controller['cid'] }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3">No controllers found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{-- C1+ --}}
+                    <div class="tab-pane fade" id="{{ $airport->ICAO }}-other">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th width="40%">CID / Name</th>
+                                    <th width="30%">Total Time</th>
+                                    <th width="30%">Iron Mic Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($controllers as $controller)
+                                    @if($controller['rating'] !== 'C1+')
+                                        @continue
+                                    @endif
+                                    <tr>
+                                        <td>{{ $controller['cid'] }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3">No controllers found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-
-    @endforeach
+    </div>
+@endforeach
 </div>
 
 <br>
@@ -402,7 +347,7 @@
                                 <tr>  
                                     <td>{{$session->callsign}}</td>
                                     <td>{{$session->user}}</td>
-                                    <td>{{$session->loggedTime($session->logged_on)}}</td>
+                                    <td></td>
                                 </tr>
                                 @endforeach
                             </tbody>

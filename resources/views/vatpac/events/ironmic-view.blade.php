@@ -229,6 +229,12 @@
                             C1/C3/I1/I3 ({{ $totals_data['ratings']['C1+'] ?? 0 }})
                         </a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#totals">
+                            Total ({{ $totals_data['ratings']['all'] ?? 0 }})
+                        </a>
+                    </li>
                 </ul>
 
                 <div class="tab-content mt-3">

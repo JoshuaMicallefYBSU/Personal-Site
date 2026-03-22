@@ -18,6 +18,8 @@ Route::prefix('vatpac')->group(function () {
     });
 });
 
+Route::get('vatpac-iron-mic', [VATPACController::class, 'ironMicView'])->name('vatpac.events.ironmic');
+
 Route::prefix('ctp')->group(function () {
     Route::prefix('oceanic')->group(function () {
         Route::get('dashboard', [CTPController::class, 'dashboardView'])->name('ctp.dashboard');

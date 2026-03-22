@@ -342,15 +342,17 @@
                         <table class="table" style="text-align: center; font-size: 12px;">
                             <thead>
                                 <tr>
-                                    <th width="40%">CID / Name</th>
-                                    <th width="30%">Total Time</th>
-                                    <th width="30%">Iron Mic Time</th>
+                                    <th width="30%">CID / Name</th>
+                                    <th width="30">Rating</th>
+                                    <th width="20%">Total Time</th>
+                                    <th width="20%">Iron Mic Time</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($totals_data['all'] as $controller)
                                     <tr>
                                         <td>{{ $controller['cid'] }}</td>
+                                        <td>{{$controller['rating']}}</td>
                                         <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
                                         <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
                                     </tr>

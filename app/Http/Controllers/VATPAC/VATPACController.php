@@ -105,11 +105,84 @@ class VATPACController extends Controller
             });
         }
 
-        // dd($final_data);
+        $allSessions = Sessions::with('vatpac_user')
+            ->where('still_connected', 0)
+            ->orderBy('logged_on', 'asc')
+            ->get();
+
+        $totals_data = [
+            'ratings' => [
+                'S1' => 0,
+                'S2' => 0,
+                'S3' => 0,
+                'C1+' => 0,
+            ],
+            'controllers' => [], // 👈 MUST BE ARRAY
+        ];
+
+        foreach ($allSessions as $session) {
+            $cid = $session->user;
+            $user = $session->vatpac_user;
+
+            if (!$user) {
+                continue;
+            }
+
+            $rating = $user->rating;
+
+            if ($rating == 5) {
+                $ratingLabel = 'S2';
+            } elseif ($rating <= 1) {
+                $ratingLabel = 'S1';
+            } elseif ($rating == 2) {
+                $ratingLabel = 'S2';
+            } elseif ($rating == 3) {
+                $ratingLabel = 'S3';
+            } else {
+                $ratingLabel = 'C1+';
+            }
+
+            if (!isset($totals_data['controllers'][$cid])) {
+                $totals_data['controllers'][$cid] = [
+                    'cid' => $cid,
+                    'rating' => $ratingLabel,
+                    'total_time' => 0,
+                    'iron_mic' => 0,
+                    'sessions' => [],
+                ];
+
+                $totals_data['ratings'][$ratingLabel]++;
+            }
+
+            if ($session->logged_off) {
+                $seconds = strtotime($session->logged_off) - strtotime($session->logged_on);
+                $hours = $seconds / 3600;
+
+                $totals_data['controllers'][$cid]['total_time'] += $hours;
+
+                $totals_data['controllers'][$cid]['sessions'][] = [
+                    'start' => $session->logged_on,
+                    'end' => $session->logged_off,
+                ];
+            }
+        }
+
+        foreach ($totals_data['controllers'] as &$controller) {
+            $controller['iron_mic'] = $this->calculateIronMic($controller['sessions']);
+        }
+        unset($controller);
+
+        $totals_data['controllers'] = array_values($totals_data['controllers']);
+
+        usort($totals_data['controllers'], function ($a, $b) {
+            return $b['iron_mic'] <=> $a['iron_mic'];
+        });
+
+        // dd($totals_data);
 
         $online = Sessions::where('still_connected',1)->orderBy('logged_on','asc')->get();
 
-        return view('vatpac.events.ironmic-view', compact('airports', 'final_data', 'online'));
+        return view('vatpac.events.ironmic-view', compact('airports', 'final_data', 'totals_data', 'online'));
     }
 
     private function calculateIronMic(array $sessions): float

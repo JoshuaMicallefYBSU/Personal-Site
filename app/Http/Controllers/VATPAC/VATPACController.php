@@ -116,8 +116,14 @@ class VATPACController extends Controller
                 'S2' => 0,
                 'S3' => 0,
                 'C1+' => 0,
+                'all' => 0,
             ],
-            'controllers' => [], // 👈 MUST BE ARRAY
+            'controllers' => [
+                'S1' => [],
+                'S2' => [],
+                'S3' => [],
+                'C1+' => [],
+            ],
         ];
 
         foreach ($allSessions as $session) {
@@ -130,20 +136,18 @@ class VATPACController extends Controller
 
             $rating = $user->rating;
 
-            if ($rating == 5) {
-                $ratingLabel = 'S2';
-            } elseif ($rating <= 1) {
+            if ($rating <= 2) {
                 $ratingLabel = 'S1';
-            } elseif ($rating == 2) {
-                $ratingLabel = 'S2';
             } elseif ($rating == 3) {
+                $ratingLabel = 'S2';
+            } elseif ($rating == 4) {
                 $ratingLabel = 'S3';
             } else {
                 $ratingLabel = 'C1+';
             }
 
-            if (!isset($totals_data['controllers'][$cid])) {
-                $totals_data['controllers'][$cid] = [
+            if (!isset($totals_data['controllers'][$ratingLabel][$cid])) {
+                $totals_data['controllers'][$ratingLabel][$cid] = [
                     'cid' => $cid,
                     'rating' => $ratingLabel,
                     'total_time' => 0,
@@ -152,29 +156,44 @@ class VATPACController extends Controller
                 ];
 
                 $totals_data['ratings'][$ratingLabel]++;
+                $totals_data['ratings']['all']++;
             }
 
             if ($session->logged_off) {
                 $seconds = strtotime($session->logged_off) - strtotime($session->logged_on);
                 $hours = $seconds / 3600;
 
-                $totals_data['controllers'][$cid]['total_time'] += $hours;
+                $totals_data['controllers'][$ratingLabel][$cid]['total_time'] += $hours;
 
-                $totals_data['controllers'][$cid]['sessions'][] = [
+                $totals_data['controllers'][$ratingLabel][$cid]['sessions'][] = [
                     'start' => $session->logged_on,
                     'end' => $session->logged_off,
                 ];
             }
         }
 
-        foreach ($totals_data['controllers'] as &$controller) {
-            $controller['iron_mic'] = $this->calculateIronMic($controller['sessions']);
+        foreach ($totals_data['controllers'] as $rating => &$controllers) {
+            foreach ($controllers as &$controller) {
+                $controller['iron_mic'] = $this->calculateIronMic($controller['sessions']);
+            }
+            unset($controller);
+
+            $controllers = array_values($controllers);
+
+            usort($controllers, function ($a, $b) {
+                return $b['iron_mic'] <=> $a['iron_mic'];
+            });
         }
-        unset($controller);
+        unset($controllers);
 
-        $totals_data['controllers'] = array_values($totals_data['controllers']);
+        $totals_data['all'] = array_merge(
+            $totals_data['controllers']['S1'],
+            $totals_data['controllers']['S2'],
+            $totals_data['controllers']['S3'],
+            $totals_data['controllers']['C1+']
+        );
 
-        usort($totals_data['controllers'], function ($a, $b) {
+        usort($totals_data['all'], function ($a, $b) {
             return $b['iron_mic'] <=> $a['iron_mic'];
         });
 

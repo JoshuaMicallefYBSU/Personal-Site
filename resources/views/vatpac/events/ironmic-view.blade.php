@@ -203,180 +203,160 @@
         <div class="card mt-4">
             <div class="card-body">
                 <h4 class="card-title">Controller Totals</h4>
-                <p>This section is presently disabled. Coming in a future update</p>
+                <p>See the total hours connected, and accepted during the Iron Mic!</p>
 
                 <ul class="nav nav-tabs">
                     <li class="nav-item">
-                        <a class="nav-link active" id="controllers-tab" data-toggle="tab" href="#s1">S1</a>
+                        <a class="nav-link active" data-toggle="tab" href="#s1">
+                            S1 ({{ $totals_data['ratings']['S1'] ?? 0 }})
+                        </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" id="positions-tab" data-toggle="tab" href="#s2">S2</a>
+                        <a class="nav-link" data-toggle="tab" href="#s2">
+                            S2 ({{ $totals_data['ratings']['S2'] ?? 0 }})
+                        </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" id="facility-tab" data-toggle="tab" href="#s3">S3</a>
+                        <a class="nav-link" data-toggle="tab" href="#s3">
+                            S3 ({{ $totals_data['ratings']['S3'] ?? 0 }})
+                        </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" id="facility-tab" data-toggle="tab" href="#other">C1/C3/I1/I3</a>
+                        <a class="nav-link" data-toggle="tab" href="#other">
+                            C1/C3/I1/I3 ({{ $totals_data['ratings']['C1+'] ?? 0 }})
+                        </a>
                     </li>
-
-                    {{-- <li class="nav-item">
-                        <a class="nav-link" id="facility-tab" data-toggle="tab" href="#totals">Totals</a>
-                    </li> --}}
                 </ul>
 
                 <div class="tab-content mt-3">
-    <div class="tab-pane fade show active" id="s1">
-        <table class="table" style="text-align: center; font-size: 12px;">
-            <thead>
-                <tr>
-                    <th width="40%">CID / Name</th>
-                    <th width="30%">Total Time</th>
-                    <th width="30%">Iron Mic Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $found = false; @endphp
-                @foreach($totals_data['controllers'] as $controller)
-                    @if($controller['rating'] === 'S1')
-                        @php $found = true; @endphp
-                        <tr>
-                            <td>{{ $controller['cid'] }}</td>
-                            <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
-                            <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
-                        </tr>
-                    @endif
-                @endforeach
+                    <div class="tab-pane fade show active" id="s1">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th width="40%">CID / Name</th>
+                                    <th width="30%">Total Time</th>
+                                    <th width="30%">Iron Mic Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($totals_data['controllers']['S1'] as $controller)
+                                    <tr>
+                                        <td>{{ $controller['cid'] }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3">No controllers found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
 
-                @if(!$found)
-                    <tr>
-                        <td colspan="3">No controllers found</td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-    </div>
+                    <div class="tab-pane fade" id="s2">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th width="40%">CID / Name</th>
+                                    <th width="30%">Total Time</th>
+                                    <th width="30%">Iron Mic Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($totals_data['controllers']['S2'] as $controller)
+                                    <tr>
+                                        <td>{{ $controller['cid'] }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3">No controllers found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
 
-    <div class="tab-pane fade" id="s2">
-        <table class="table" style="text-align: center; font-size: 12px;">
-            <thead>
-                <tr>
-                    <th width="40%">CID / Name</th>
-                    <th width="30%">Total Time</th>
-                    <th width="30%">Iron Mic Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $found = false; @endphp
-                @foreach($totals_data['controllers'] as $controller)
-                    @if($controller['rating'] === 'S2')
-                        @php $found = true; @endphp
-                        <tr>
-                            <td>{{ $controller['cid'] }}</td>
-                            <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
-                            <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
-                        </tr>
-                    @endif
-                @endforeach
+                    <div class="tab-pane fade" id="s3">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th width="40%">CID / Name</th>
+                                    <th width="30%">Total Time</th>
+                                    <th width="30%">Iron Mic Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($totals_data['controllers']['S3'] as $controller)
+                                    <tr>
+                                        <td>{{ $controller['cid'] }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3">No controllers found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
 
-                @if(!$found)
-                    <tr>
-                        <td colspan="3">No controllers found</td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-    </div>
+                    <div class="tab-pane fade" id="other">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th width="40%">CID / Name</th>
+                                    <th width="30%">Total Time</th>
+                                    <th width="30%">Iron Mic Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($totals_data['controllers']['C1+'] as $controller)
+                                    <tr>
+                                        <td>{{ $controller['cid'] }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3">No controllers found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
 
-    <div class="tab-pane fade" id="s3">
-        <table class="table" style="text-align: center; font-size: 12px;">
-            <thead>
-                <tr>
-                    <th width="40%">CID / Name</th>
-                    <th width="30%">Total Time</th>
-                    <th width="30%">Iron Mic Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $found = false; @endphp
-                @foreach($totals_data['controllers'] as $controller)
-                    @if($controller['rating'] === 'S3')
-                        @php $found = true; @endphp
-                        <tr>
-                            <td>{{ $controller['cid'] }}</td>
-                            <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
-                            <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
-                        </tr>
-                    @endif
-                @endforeach
-
-                @if(!$found)
-                    <tr>
-                        <td colspan="3">No controllers found</td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-    </div>
-
-    <div class="tab-pane fade" id="other">
-        <table class="table" style="text-align: center; font-size: 12px;">
-            <thead>
-                <tr>
-                    <th width="40%">CID / Name</th>
-                    <th width="30%">Total Time</th>
-                    <th width="30%">Iron Mic Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $found = false; @endphp
-                @foreach($totals_data['controllers'] as $controller)
-                    @if($controller['rating'] === 'C1+')
-                        @php $found = true; @endphp
-                        <tr>
-                            <td>{{ $controller['cid'] }}</td>
-                            <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
-                            <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
-                        </tr>
-                    @endif
-                @endforeach
-
-                @if(!$found)
-                    <tr>
-                        <td colspan="3">No controllers found</td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-    </div>
-
-    <div class="tab-pane fade" id="totals">
-        <table class="table" style="text-align: center; font-size: 12px;">
-            <thead>
-                <tr>
-                    <th width="40%">CID / Name</th>
-                    <th width="30%">Total Time</th>
-                    <th width="30%">Iron Mic Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($totals_data['controllers'] as $controller)
-                    <tr>
-                        <td>{{ $controller['cid'] }}</td>
-                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
-                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="3">No controllers found</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
+                    <div class="tab-pane fade" id="totals">
+                        <table class="table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                                <tr>
+                                    <th width="40%">CID / Name</th>
+                                    <th width="30%">Total Time</th>
+                                    <th width="30%">Iron Mic Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($totals_data['all'] as $controller)
+                                    <tr>
+                                        <td>{{ $controller['cid'] }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['total_time'] * 3600))->format('G:i') }}</td>
+                                        <td>{{ \Carbon\Carbon::createFromTimestampUTC(round($controller['iron_mic'] * 3600))->format('G:i') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3">No controllers found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

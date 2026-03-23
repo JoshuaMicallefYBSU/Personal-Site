@@ -12,7 +12,7 @@
     <meta property="og:url" content="{{ url()->current() }}">
 
 <p>See all the airports participating in the VATPAC Iron Mic Event occuring between the 20th-23rd of March, 2026!</p>
-<p><b>Event has Concluded:</b> Times below are final</p>
+<p><b>Event has Concluded:</b> Times below are final for the event. Check VATPAC Discord for winners</p>
 
 {{-- Airport Views --}}
 <div class="row">

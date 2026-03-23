@@ -15,12 +15,15 @@ Route::get('/test/vatsim-api', [TestController::class, 'Job'])->name('vatsimapi'
 Route::prefix('vatpac')->group(function () {
     Route::prefix('events')->group(function () {
         Route::get('iron-mic-leaderboard', function () {
-            return redirect('/vatpac-iron-mic');
+            return redirect('/vatpac/iron-mic');
         });
     });
 });
+Route::get('vatpac-iron-mic', function () {
+    return redirect('/vatpac/iron-mic');
+});
 
-Route::get('vatpac-iron-mic', [VATPACController::class, 'ironMicView'])->name('vatpac.events.ironmic');
+Route::get('vatpac/iron-mic', [VATPACController::class, 'ironMicView'])->name('vatpac.events.ironmic');
 
 Route::prefix('ctp')->group(function () {
     Route::prefix('oceanic')->group(function () {

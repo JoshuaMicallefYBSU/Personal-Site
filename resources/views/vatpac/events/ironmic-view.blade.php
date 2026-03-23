@@ -5,13 +5,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta property="og:title" content="VATPAC - Iron Mic Leaderboard">
-    <title>{{ config('app.name', 'VATPAC - Iron Mic Leaderboard') }}</title>
+    <title>{{ config('VATPAC - Iron Mic Leaderboard') }}</title>
     <meta property="og:description"
         content="Event Position Tracker for the Iron Mic hosted by VATPAC in 2026">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
 
 <p>See all the airports participating in the VATPAC Iron Mic Event occuring between the 20th-23rd of March, 2026!</p>
+<p><b>Event has Concluded:</b> Times below are final</p>
 
 {{-- Airport Views --}}
 <div class="row">

@@ -44,13 +44,16 @@ class TafController extends Controller
             }
 
             $xml = <<<XML
-<?xml version="1.0" encoding="UTF-8"?>
-<response>
-  <station>{$this->escapeXml($icao)}</station>
-  <raw_text>{$this->escapeXml($taf)}</raw_text>
-</response>
-XML;
+                <?xml version="1.0" encoding="UTF-8"?>
+                <response>
+                <station>{$this->escapeXml($icao)}</station>
+                <raw_text>{$this->escapeXml($taf)}</raw_text>
+                </response>
+                XML;
 
+            $this->sendDiscordWebhook("TAF API has been called for {$icao} at ".\Carbon\Carbon::now()->format('H:i')."Z");
+
+            
             return $this->xmlResponse($xml, 200);
         } catch (\Throwable $e) {
             return $this->xmlResponse(
@@ -103,5 +106,19 @@ XML;
         return response($body, $status)
             ->header('Content-Type', 'application/xml; charset=utf-8')
             ->header('Cache-Control', 'public, max-age=120');
+    }
+
+    private function sendDiscordWebhook(string $message): void
+    {
+        try {
+            \Illuminate\Support\Facades\Http::post(
+                "https://canary.discord.com/api/webhooks/1485860377278550126/huRahVetYfoWxWDfRz1ciLea5nv1MlAYDLHOIjdC4CUtbUe_28iifi8dH2c8juh1cnkR",
+                [
+                    'content' => $message
+                ]
+            );
+        } catch (\Throwable $e) {
+            // swallow errors so API never breaks
+        }
     }
 }

@@ -11,7 +11,7 @@ Route::get('/', function () {
 
 Route::get('/test/vatsim-api', [TestController::class, 'Job'])->name('vatsimapi'); // Local Running Only
 
-// VATPAC Section
+// VATPAC Section (Redirects as they are old links)
 Route::prefix('vatpac')->group(function () {
     Route::prefix('events')->group(function () {
         Route::get('iron-mic-leaderboard', function () {
@@ -23,7 +23,10 @@ Route::get('vatpac-iron-mic', function () {
     return redirect('/vatpac/iron-mic');
 });
 
+
+// VATPAC Functions
 Route::get('vatpac/iron-mic', [VATPACController::class, 'ironMicView'])->name('vatpac.events.ironmic');
+
 
 Route::prefix('ctp')->group(function () {
     Route::prefix('oceanic')->group(function () {

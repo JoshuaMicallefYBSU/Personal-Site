@@ -51,7 +51,7 @@ class TafController extends Controller
                 </response>
                 XML;
 
-            $this->sendDiscordWebhook("TAF API has been called for {$icao} at ".\Carbon\Carbon::now()->format('H:i')."Z");
+            $this->sendDiscordWebhook("TAF API has been called for {$icao} at ".\Carbon\Carbon::now()->format('H:i')."Z\n> ".$taf);
 
             
             return $this->xmlResponse($xml, 200);

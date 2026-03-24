@@ -5,26 +5,37 @@ namespace App\Http\Controllers\VATPAC;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
 
 class TafController extends Controller
 {
     public function show(Request $request)
     {
-        $icao = strtoupper(trim($request->query('ids', '')));
+        $ids = strtoupper(trim($request->query('ids', '')));
+        $icaos = array_filter(array_map('trim', explode(',', $ids)));
 
-        if (!preg_match('/^[A-Z]{4}$/', $icao)) {
+        if (empty($icaos)) {
             return $this->xmlResponse(
-                $this->errorXml('Invalid ICAO: ' . $this->escapeXml($icao ?: 'missing')),
+                $this->errorXml('Invalid ICAO: missing'),
                 400
             );
+        }
+
+        foreach ($icaos as $icao) {
+            if (!preg_match('/^[A-Z]{4}$/', $icao)) {
+                return $this->xmlResponse(
+                    $this->errorXml("Invalid ICAO: {$this->escapeXml($icao)}"),
+                    400
+                );
+            }
         }
 
         try {
             $upstream = Http::withHeaders([
                 'User-Agent' => 'vatSys-TAF-XML-Laravel',
             ])
-                ->timeout(10)
-                ->get('https://wx.vatpac.org/tafs.txt');
+            ->timeout(10)
+            ->get('https://wx.vatpac.org/tafs.txt');
 
             if (!$upstream->successful()) {
                 return $this->xmlResponse(
@@ -34,27 +45,57 @@ class TafController extends Controller
             }
 
             $text = $upstream->body();
-            $taf = $this->extractTaf($text, $icao);
+            $results = [];
 
-            if (!$taf) {
+            foreach ($icaos as $icao) {
+                $taf = $this->extractTaf($text, $icao);
+
+                if ($taf) {
+                    $results[] = [
+                        'icao' => $icao,
+                        'taf'  => $taf,
+                    ];
+                }
+            }
+
+            if (empty($results)) {
+                $this->sendDiscordWebhook(
+                    "TAF API called at " . Carbon::now('UTC')->format('H:i') . "Z\n> No TAF found for: " . implode(', ', $icaos)
+                );
+
                 return $this->xmlResponse(
-                    $this->errorXml("No TAF found for {$icao}"),
+                    $this->errorXml('No TAF found for requested ICAOs'),
                     404
                 );
             }
 
+            $stationsXml = '';
+
+            foreach ($results as $res) {
+                $stationsXml .= "
+  <station>
+    <id>{$this->escapeXml($res['icao'])}</id>
+    <raw_text>{$this->escapeXml($res['taf'])}</raw_text>
+  </station>";
+            }
+
             $xml = <<<XML
-                <?xml version="1.0" encoding="UTF-8"?>
-                <response>
-                <station>{$this->escapeXml($icao)}</station>
-                <raw_text>{$this->escapeXml($taf)}</raw_text>
-                </response>
-                XML;
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+{$stationsXml}
+</response>
+XML;
 
-            $this->sendDiscordWebhook("TAF API has been called for {$icao} at ".\Carbon\Carbon::now()->format('H:i')."Z\n> ".$taf);
+            $discordMessage = "# TAF API called at " . Carbon::now('UTC')->format('H:i') . "Z\n";
 
-            
+            foreach ($results as $res) {
+                $discordMessage .= "**{$res['icao']}**\n> {$res['taf']}\n";
+            }
+
+            $this->sendDiscordWebhook($discordMessage);
+
             return $this->xmlResponse($xml, 200);
+
         } catch (\Throwable $e) {
             return $this->xmlResponse(
                 $this->errorXml('Worker exception: ' . $this->escapeXml($e->getMessage())),
@@ -111,12 +152,9 @@ XML;
     private function sendDiscordWebhook(string $message): void
     {
         try {
-            \Illuminate\Support\Facades\Http::post(
-                "https://canary.discord.com/api/webhooks/1485860377278550126/huRahVetYfoWxWDfRz1ciLea5nv1MlAYDLHOIjdC4CUtbUe_28iifi8dH2c8juh1cnkR",
-                [
-                    'content' => $message
-                ]
-            );
+            Http::post("https://canary.discord.com/api/webhooks/1485860377278550126/huRahVetYfoWxWDfRz1ciLea5nv1MlAYDLHOIjdC4CUtbUe_28iifi8dH2c8juh1cnkR", [
+                'content' => $message,
+            ]);
         } catch (\Throwable $e) {
             // swallow errors so API never breaks
         }

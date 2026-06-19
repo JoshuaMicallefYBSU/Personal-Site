@@ -24,5 +24,6 @@ class OnlinePilots extends Model
         'arr_distance',
         'hoppie_connected',
         'status',
+        'online',
     ];
 }

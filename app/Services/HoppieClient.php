@@ -38,7 +38,7 @@ class HoppieClient
 
         } catch (GuzzleException $e) {
             Log::warning('Hoppie station ping failed', [
-                'callsign' => $callsign,
+                'callsign' => $this->callsign,
                 'error'    => $e->getMessage(),
             ]);
 
@@ -49,14 +49,14 @@ class HoppieClient
     /**
      * Check if a callsign is connected to Hoppie
      */
-    public function isConnected(string $callsign, $from): bool
+    public function isConnected(string $callsign,): bool
     {
         try {
             $response = $this->client->get('/acars/system/connect.html', [
                 'query' => [
                     'logon'  => $this->logon,
                     'from'   => 'SERVER',
-                    'to'     => strtoupper($from),                 // MUST be your own station
+                    'to'     => $this->callsign,                 // MUST be your own station
                     'type'   => 'ping',
                     'packet' => strtoupper($callsign),    // callsign(s) go here
                 ],
@@ -79,10 +79,9 @@ class HoppieClient
     
     public function sendTelex(string $to, string $message)
     {
-        // TELEX Message
         try {
-            $response = $this->client->get('/acars/system/connect.html', [
-                'query' => [
+            $response = $this->client->post('/acars/system/connect.html', [
+                'form_params' => [
                     'logon'  => $this->logon,
                     'from'   => $this->callsign,
                     'to'     => strtoupper($to),
@@ -91,6 +90,7 @@ class HoppieClient
                 ],
             ]);
 
+            Log::info('Hoppie response', ['body' => $message]);
         } catch (GuzzleException $e) {
             Log::error('Hoppie telex send failed', [
                 'from'  => $this->callsign,

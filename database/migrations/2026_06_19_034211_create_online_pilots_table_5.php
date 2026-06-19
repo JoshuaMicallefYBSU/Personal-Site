@@ -37,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('online_pilots');
+        Schema::dropIfExists('rcl_online_pilots');
     }
 };

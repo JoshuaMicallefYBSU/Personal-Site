@@ -141,20 +141,6 @@ class OperationsCenter implements ShouldQueue
                 $arr_taf    = $arr_weather['taf'] ?? 'TAF N/A';
                 $altn_metar = $altn_weather['metar'] ?? 'METAR N/A';
                 $altn_taf   = $altn_weather['taf'] ?? 'TAF N/A';
-                
-                $ralt = explode(' ', $pilot->ralt);
-                $raltWeather = [];
-
-                if($pilot->ralt !== null){
-                    foreach($ralt as $icao) {
-                        $altn_weather = $weather->requestWeather($pilot->altn);
-                        
-                        $raltWeather[$icao] = [
-                            'metar' => $altn_weather['metar'] ?? 'METAR N/A',
-                            'taf'   => $altn_weather['taf'] ?? 'TAF N/A',
-                        ];
-                    }
-                }
 
                 $blocks = [];
                 $blocks[] = "WEATHER UPLINK FOR {$pilot->callsign},\n{$pilot->dep}-{$pilot->arr}, EOBT {$pilot->eobt}Z";
@@ -163,12 +149,6 @@ class OperationsCenter implements ShouldQueue
 
                 if($pilot->alternate !== null) {
                 $blocks[] = "ALTERNATE WEATHER: {$pilot->altn}\n{$altn_metar}\n{$altn_taf}";
-                }
-
-                if(count($raltWeather) > 0) {
-                    foreach($raltWeather as $icao => $altENR) {
-                        $blocks[] = "ENROUTE ALTERNATE: {$icao}\n{$altENR['metar']}\n{$altENR['taf']}";
-                    }
                 }
 
                 $messages = [];

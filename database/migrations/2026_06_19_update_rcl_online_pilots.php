@@ -26,7 +26,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('rcl_online_pilots', function (Blueprint $table) {
-            $table->dropColumn(['rating']);
+            $table->dropColumn(['online']);
         });
     }
 };

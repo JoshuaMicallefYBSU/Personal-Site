@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('rcl_online_pilots', function (Blueprint $table) {
-            $table->datetime('eibt')->nullable();
+            $table->datetime('ralt_time')->nullable();
         });
     }
 

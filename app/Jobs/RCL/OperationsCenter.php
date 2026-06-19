@@ -15,6 +15,8 @@ class OperationsCenter implements ShouldQueue
 {
     use Queueable;
 
+    protected array $operators;
+
     public function __construct()
     {
         $this->operators = ['BRITTANY WILLIAMS', 'ROB WRINGLER ', 'KEVIN NORMAN', 'AMANDA HOUSE', 'RICHARD RUMP', 'CALLUM S'];

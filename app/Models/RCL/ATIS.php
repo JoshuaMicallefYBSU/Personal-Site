@@ -13,6 +13,7 @@ class ATIS extends Model
         'icao',
         'letter',
         'content',
-        'aircraft_inbound'
+        'aircraft_inbound',
+        'change_detected',
     ];
 }

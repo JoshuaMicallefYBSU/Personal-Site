@@ -295,11 +295,11 @@ class OperationsCenter implements ShouldQueue
         }
 
 
-        // Update Arrival / Alternate for Aircraft Arriving ~ 250NM from their arrival
+        // Update Arrival / Alternate for Aircraft Arriving ~ 400NM from their arrival
         {
             $pilots = OnlinePilots::where('status', 4)->where('online', 1)->where('hoppie_connected', '!=', 0)->get();
             foreach($pilots as $pilot) {
-                if($pilot->arr_distance < 250) {
+                if($pilot->arr_distance < 400) {
                     $weather = new AviationWeatherClient();
                     $arr_weather = $weather->requestWeather($pilot->arr);
                     $altn_weather = $weather->requestWeather($pilot->altn);

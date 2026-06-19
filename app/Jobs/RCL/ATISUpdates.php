@@ -99,5 +99,10 @@ class ATISUpdates implements ShouldQueue
                 $a->save();
             }
         }
+
+        // Delete irrelevant ATIS' after 10 minutes
+        {
+            ATIS::where('aircraft_inbound', 0)->where('updated_at', '<=', Carbon::now()->subMinutes(10))->delete();
+        }
     }
 }

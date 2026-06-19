@@ -358,7 +358,7 @@ class OperationsCenter implements ShouldQueue
 
         // Update with ATA message logoff message from Operations
         {
-            $pilots = OnlinePilots::where('status', '>', 3)->where('online', 1)->where('hoppie_connected', '!=', 0)->get();
+            $pilots = OnlinePilots::where('status', '>', 3) where('status', '<', 10)->where('online', 1)->where('hoppie_connected', '!=', 0)->get();
             foreach( $pilots as $pilot ) {
                 if($pilot->arr_distance < 3 && $pilot->gs < 81) {
                     $operator = $this->operators[array_rand($this->operators)];

@@ -20,10 +20,20 @@ class VATSIMClient
         }
     }
 
-    public function getControllers()
+    public function getRCLPilots()
     {
-    $data = $this->getVATSIMData();
+        $rclPilots = [];
 
-    return $data->controllers ?? []; // Ensures it always returns an array
+        $pilots = $this->getVATSIMData();
+        $pilots = $pilots->pilots;
+
+        foreach($pilots as $pilot){
+            if($pilot->callsign[0] === 'R' && $pilot->callsign[1] === 'C' && $pilot->callsign[2] === 'L'){
+                $rclPilots[] = $pilot;
+            }
+        }
+
+        return $rclPilots;
     }
+    
 }

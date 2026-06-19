@@ -20,6 +20,18 @@ class VATSIMClient
         }
     }
 
+    public function getATISMData()
+    {
+        $client = new Client();
+        $response = $client->get('https://data.vatsim.net/v3/afv-atis-data.json');
+
+        if ($response->getStatusCode() === 200) {
+            return json_decode($response->getBody(), true);
+        }
+
+        return [];
+    }
+
     public function getRCLPilots()
     {
         $rclPilots = [];
@@ -35,5 +47,26 @@ class VATSIMClient
 
         return $rclPilots;
     }
+
+    public function findATIS($icao)
+    {
+        $atis = $this->getATISMData();
+
+        $info = [
+            'letter'    => 'Z',
+            'text'      => null,
+        ];
+
+        foreach($atis as $a){
+            if(preg_match('/^' . $icao . '_(?!D_)[A-Z]?_?ATIS$/', $a['callsign'])){
+                $info['letter'] = $a['atis_code'];
+                $info['text']   = json_encode($a['text_atis']);
+                break;
+            }
+        }
+
+        return $info;
+    }
+    
     
 }

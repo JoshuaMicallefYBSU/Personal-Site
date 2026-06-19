@@ -379,6 +379,12 @@ class OperationsCenter implements ShouldQueue
                 }
             }
         }
+
+
+        // Delete offline connections after 10 minutes
+        {
+            OnlinePilots::where('online', 0)->where('updated_at', '<=', Carbon::now()->subMinutes(10))->delete();
+        }
     }
 
     private function calculateDistance($lat1, $lon1, $lat2, $lon2) 

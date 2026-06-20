@@ -22,19 +22,30 @@ class AviationWeatherClient
     // Run the script to register RCLOPS as a connected station on Hoppie
     public function requestWeather($icao)
     {
-        $weather = [];
+        $metar = 'METAR N/A';
+        $taf   = 'TAF N/A';
+
         try {
-            $metar = $this->client->get("metar?ids={$icao}");
-            $taf = $this->client->get("taf?ids={$icao}");
-
-            $weather = [
-                'metar' => (string) $metar->getBody() ?? 'METAR N/A',
-                'taf'   => (string) $taf->getBody() ?? 'TAF N/A',
-            ];
-
-            return $weather;
+            $response = (string) $this->client->get("metar?ids={$icao}")->getBody();
+            if (!empty(trim($response))) {
+                $metar = trim($response);
+            }
         } catch (GuzzleException $e) {
-
+            Log::error("AviationWeatherClient METAR error for {$icao}: " . $e->getMessage());
         }
+
+        try {
+            $response = (string) $this->client->get("taf?ids={$icao}")->getBody();
+            if (!empty(trim($response))) {
+                $taf = trim($response);
+            }
+        } catch (GuzzleException $e) {
+            Log::error("AviationWeatherClient TAF error for {$icao}: " . $e->getMessage());
+        }
+
+        return [
+            'metar' => $metar,
+            'taf'   => $taf,
+        ];
     }
 }

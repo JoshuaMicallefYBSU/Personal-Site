@@ -25,5 +25,10 @@ class OnlinePilots extends Model
         'hoppie_connected',
         'status',
         'online',
+        'aircraft',
+        'registration',
+        'route',
+        'elt',
+        'fl',
     ];
 }

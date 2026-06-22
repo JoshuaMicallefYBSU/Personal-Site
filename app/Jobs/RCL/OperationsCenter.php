@@ -19,7 +19,17 @@ class OperationsCenter implements ShouldQueue
 
     public function __construct()
     {
-        $this->operators = ['BRITTANY WILLIAMS', 'ROB WRINGLER ', 'KEVIN NORMAN', 'AMANDA HOUSE', 'RICHARD RUMP', 'CALLUM S'];
+        $this->operators = [
+            'BRITTANY WILLIAMS', 
+            'ROB WRINGLER ', 
+            'KEVIN NORMAN', 
+            'AMANDA HOUSE', 
+            'RICHARD RUMP', 
+            'CALLUM S',
+            'BEN DOVER',
+            'IVANA TINKLE',
+            'PETER FILE',
+        ];
     }
 
 
@@ -61,6 +71,11 @@ class OperationsCenter implements ShouldQueue
                     $dep_dist = $this->calculateDistance($pilot->latitude, $pilot->longitude, $dep->latitude, $dep->longitude);
                     $arr_dist = $this->calculateDistance($pilot->latitude, $pilot->longitude, $arr->latitude, $arr->longitude);
 
+                    $elt_time = $this->eltCalculation($pilot->flight_plan->deptime, $pilot->flight_plan->enroute_time);
+                    
+                    $reg = [];
+                    preg_match('/REG\/([A-Z0-9-]+)/', $pilot->flight_plan->remarks, $reg);
+
                     OnlinePilots::UpdateorCreate(['callsign' => $pilot->callsign, 'dep' => $pilot->flight_plan->departure, 'arr' => $pilot->flight_plan->arrival,],
                         [
                             'name'          =>  preg_replace('/\s*[A-Z]{4}$/', '', $pilot->name),
@@ -73,12 +88,16 @@ class OperationsCenter implements ShouldQueue
                             'dep_distance'  =>  $dep_dist ?? null,
                             'arr_distance'  =>  $arr_dist ?? null,
                             'online'        =>  1,
+                            'aircraft'      =>  $pilot->flight_plan->aircraft_short,
+                            'registration'  =>  $reg[1] ?? null,
+                            'route'         =>  $pilot->flight_plan->route,
+                            'elt'           =>  $elt_time,
+                            'fl'            =>  $pilot->flight_plan->altitude,
                         ]
                     );
                 }
             }
         }
-
 
         // Hoppie Connection Check ~ Every 5 Minutes
         $pilots = OnlinePilots::where('hoppie_connected', 0)->where('online', 1)->get();
@@ -98,17 +117,20 @@ class OperationsCenter implements ShouldQueue
             $pilots = OnlinePilots::where('hoppie_connected', 1)->where('online', 1)->get();
             foreach($pilots as $pilot){
                 $operator = $this->operators[array_rand($this->operators)];
+                $altn = $pilot->altn ?: 'NONE';
+                $ralt = $pilot->ralt ?: 'NONE';
 
                 $sentTelex = $hoppieClient->sendTelex($pilot->callsign, "
-                    REGISTRATION FOR {$pilot->callsign},
-                    {$pilot->dep}-{$pilot->arr}, EOBT {$pilot->eobt}Z
-                    CAPT: {$pilot->name}
-
-                    Your flight has been registered with the Centralised Recliner Operations Center (CROC). Further Details to follow as required by the CROC.
-
-                    Regards
-                    {$operator}
-                ");
+                    XXX {$pilot->callsign} CROC LOGON XXX
+                    CPT: {$pilot->name}
+                    ACFT: {$pilot->aircraft} {$pilot->registration}
+                    RTE: {$pilot->route}
+                    ALT: {$pilot->fl}
+                    DEP: {$pilot->dep} {$pilot->eobt}z
+                    ARR: {$pilot->dep} {$pilot->elt}z
+                    ALTN: {$altn}
+                    RALT: {$ralt}
+                    DISPATCHER: {$operator}");
 
                 $pilot->status = 1;
                 $pilot->hoppie_connected = 2;
@@ -121,6 +143,8 @@ class OperationsCenter implements ShouldQueue
                 }
             }
         }
+
+        return;
 
 
         // Aircraft is now 15mins from EOBT. Time to calculate the weather and send the information to the pilot
@@ -386,5 +410,21 @@ class OperationsCenter implements ShouldQueue
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         $distanceNm = $earthRadiusNm * $c;
         return $distanceNm;
+    }
+
+    public function eltCalculation($dep, $enr)
+    {
+        $depHours = (int) substr($dep, 0, 2);
+        $depMins  = (int) substr($dep, 2, 2);
+
+        $routeHours = (int) substr($enr, 0, 2);
+        $routeMins  = (int) substr($enr, 2, 2);
+
+        $totalMinutes =
+            ($depHours * 60 + $depMins) +
+            ($routeHours * 60 + $routeMins);
+
+        $elt = sprintf('%02d%02d', floor(($totalMinutes / 60) % 24), $totalMinutes % 60);
+        return $elt;
     }
 }

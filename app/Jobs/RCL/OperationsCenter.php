@@ -144,8 +144,6 @@ class OperationsCenter implements ShouldQueue
             }
         }
 
-        return;
-
 
         // Aircraft is now 15mins from EOBT. Time to calculate the weather and send the information to the pilot
         // Requires Status = 1 to activate

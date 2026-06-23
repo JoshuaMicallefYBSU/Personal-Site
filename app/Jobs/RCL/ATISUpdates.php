@@ -21,88 +21,70 @@ class ATISUpdates implements ShouldQueue
         
     }
 
-
     public function handle(): void
     {
-        $vatsimData = new VATSIMClient();
-        $pilots = $vatsimData->getRCLPilots();
+        // Set all ATIS' to offline status, so we can then iterate after
+        ATIS::query()->update(['aircraft_inbound' => 0]);
 
-        $airport_icaos = [];
-            
-        // Set all ATIS' to offline status, so we can then itterate after
-        $atiss = ATIS::all();
-        foreach($atiss as $atis){
-            $atis->aircraft_inbound = 0;
-            $atis->save();
-        }
+        // Check which ATIS' need to be monitored (arr AND dep within range)
+        $pilots = OnlinePilots::all();
 
-
-        // Check which ATIS' need to be monitored
-        {
-            $pilots = OnlinePilots::where('arr_distance', '<', 300)->where('hoppie_connected', '!=', 0)->get();
-            foreach($pilots as $pilot){
+        foreach ($pilots as $pilot) {
+            if ($pilot->arr) {
                 ATIS::updateOrCreate(
-                    ['icao' => $pilot->arr],  
-                    ['aircraft_inbound' => 1]   
+                    ['icao' => $pilot->arr],
+                    [
+                        'aircraft_inbound'  => 1,
+                    ]
+                );
+            }
+
+            if ($pilot->dep) {
+                ATIS::updateOrCreate(
+                    ['icao' => $pilot->dep],
+                    [
+                        'aircraft_inbound' => 1,
+                    ]
                 );
             }
         }
 
-        
-        // Itterate throught each ATIS that needs to be monitored and update it accordingly.
-        {
-            $atiss = ATIS::where('aircraft_inbound', 1)->get();
-            foreach($atiss as $atis){
-                $vatsimATIS = new VATSIMClient;
-                $network = $vatsimATIS->findATIS($atis->icao);
+        // Iterate through each ATIS that needs to be monitored and update it accordingly
+        $atiss = ATIS::where('aircraft_inbound', 1)->get();
+        foreach ($atiss as $atis) {
+            $vatsimATIS = new VATSIMClient;
+            $network = $vatsimATIS->findATIS($atis->icao);
 
-                if($network['text'] === $atis->content){
-                    continue;
-                }
+            // Connected & No Update
+            if ($network['text'] === $atis->content) {
+                $atis->letter = $network['letter'];
+                $atis->content = $network['text'];
+                $atis->save();
+                continue;
+            }
 
+            // Connected & Updated
+            if ($network['text'] !== $atis->content) {
                 $atis->change_detected = 1;
                 $atis->letter = $network['letter'];
                 $atis->content = $network['text'];
                 $atis->save();
+                continue;
             }
-        }
 
-
-        // Itterate through each ATIS that has changes, and send it off to all users.
-        {
-            $changes = ATIS::where('change_detected', 1)->get();
-            foreach($changes as $a){
-                $arr = $a->icao;
-                $pilots = OnlinePilots::where('arr', $arr)->where('arr_distance', '<', 300)->where('hoppie_connected', '!=', 0)->where('online', 1)->get();
-
-                if($a->content == null){
-                    $atis_section = "NO ATIS CURRENTLY AVAILABLE. \nCROC NOW MONITORING AND WILL ADVISE OF ANY STATUS CHANGE.";
-                } else {
-                    $atis_lines = json_decode($a->content, true);
-                    $atis_section = implode("\n", $atis_lines);
-                }
-                
-                foreach($pilots as $pilot){
-
-
-                    $hoppieClient = new HoppieClient();
-
-                    $message = "{$pilot->callsign}, {$pilot->dep}-{$pilot->arr}";
-                    $message .= "\n MONITORING ATIS FOR {$pilot->arr}";
-
-                    $message .= "\n\n" . $atis_section;
-
-                    $sentTelex = $hoppieClient->sendTelex($pilot->callsign, $message);
-                }
-
-                $a->change_detected = 0;
-                $a->save();
+            // Offline
+            if($network['text'] === "Offline"){
+                $atis->offline = 1;
+                $atis->letter = "Offline";
+                $atis->content = "Offline";
+                $atis->save();
+                continue;
             }
         }
 
         // Delete irrelevant ATIS' after 10 minutes
-        {
-            ATIS::where('aircraft_inbound', 0)->where('updated_at', '<=', Carbon::now()->subMinutes(10))->delete();
-        }
+        ATIS::where('aircraft_inbound', 0)
+            ->where('updated_at', '<=', Carbon::now()->subMinutes(10))
+            ->delete();
     }
 }

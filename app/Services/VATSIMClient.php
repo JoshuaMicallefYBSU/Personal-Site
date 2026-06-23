@@ -53,8 +53,8 @@ class VATSIMClient
         $atis = $this->getATISMData();
 
         $info = [
-            'letter'    => 'Z',
-            'text'      => null,
+            'letter'    => 'Offline',
+            'text'      => 'Offline',
         ];
 
         foreach($atis as $a){

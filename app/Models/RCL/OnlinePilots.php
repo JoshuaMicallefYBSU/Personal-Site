@@ -30,5 +30,6 @@ class OnlinePilots extends Model
         'route',
         'elt',
         'fl',
+        'logon_time'
     ];
 }

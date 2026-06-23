@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Jobs\VATPAC\ATCSessions;
 use App\Jobs\RCL\OperationsCenter;
 use App\Jobs\RCL\ATISUpdates;
+use App\Jobs\RCL\RestartCROC;
 
 class TestController extends Controller
 {

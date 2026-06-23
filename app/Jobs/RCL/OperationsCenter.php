@@ -5,6 +5,7 @@ namespace App\Jobs\RCL;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Carbon\Carbon;
+use App\Models\RCL\ATIS;
 use App\Models\RCL\OnlinePilots;
 use App\Models\RCL\Airports;
 use App\Services\AviationWeatherClient;
@@ -23,9 +24,12 @@ class OperationsCenter implements ShouldQueue
             'BRITTANY WILLIAMS', 
             'ROB WRINGLER ', 
             'KEVIN NORMAN', 
+            'DIXIE NORMOUS',
+            'ANITA HARDCOK',
+            'WILMA FINGERDOO',
+            'LEE NOVER',
             'AMANDA HOUSE', 
             'RICHARD RUMP', 
-            'CALLUM S',
             'BEN DOVER',
             'IVANA TINKLE',
             'PETER FILE',
@@ -45,11 +49,11 @@ class OperationsCenter implements ShouldQueue
 
         // Check all VATSIM Connections for RCL Pilots
         {
-            $all_pilots = OnlinePilots::all();
-            foreach($all_pilots as $p){
-                $p->online = 0;
-                $p->save();
-            }
+            // $all_pilots = OnlinePilots::all();
+            // foreach($all_pilots as $p){
+            //     $p->online = 0;
+            //     $p->save();
+            // }
 
             $vatsimData = new VATSIMClient();
             $pilots = $vatsimData->getRCLPilots();
@@ -76,25 +80,25 @@ class OperationsCenter implements ShouldQueue
                     $reg = [];
                     preg_match('/REG\/([A-Z0-9-]+)/', $pilot->flight_plan->remarks, $reg);
 
-                    OnlinePilots::UpdateorCreate(['callsign' => $pilot->callsign, 'dep' => $pilot->flight_plan->departure, 'arr' => $pilot->flight_plan->arrival,],
-                        [
-                            'name'          =>  preg_replace('/\s*[A-Z]{4}$/', '', $pilot->name),
-                            'lat'           =>  $pilot->latitude,
-                            'lon'           =>  $pilot->longitude,
-                            'gs'            =>  $pilot->groundspeed,
-                            'altn'          =>  $pilot->flight_plan->alternate ?? null,
-                            'ralt'          =>  $ralt,
-                            'eobt'          =>  $pilot->flight_plan->deptime,
-                            'dep_distance'  =>  $dep_dist ?? null,
-                            'arr_distance'  =>  $arr_dist ?? null,
-                            'online'        =>  1,
-                            'aircraft'      =>  $pilot->flight_plan->aircraft_short,
-                            'registration'  =>  $reg[1] ?? null,
-                            'route'         =>  $pilot->flight_plan->route,
-                            'elt'           =>  $elt_time,
-                            'fl'            =>  $pilot->flight_plan->altitude,
-                        ]
-                    );
+                    // OnlinePilots::UpdateorCreate(['callsign' => $pilot->callsign, 'dep' => $pilot->flight_plan->departure, 'arr' => $pilot->flight_plan->arrival,],
+                    //     [
+                    //         'name'          =>  preg_replace('/\s*[A-Z]{4}$/', '', $pilot->name),
+                    //         'lat'           =>  $pilot->latitude,
+                    //         'lon'           =>  $pilot->longitude,
+                    //         'gs'            =>  $pilot->groundspeed,
+                    //         'altn'          =>  $pilot->flight_plan->alternate ?? null,
+                    //         'ralt'          =>  $ralt,
+                    //         'eobt'          =>  $pilot->flight_plan->deptime,
+                    //         'dep_distance'  =>  $dep_dist ?? null,
+                    //         'arr_distance'  =>  $arr_dist ?? null,
+                    //         'online'        =>  1,
+                    //         'aircraft'      =>  $pilot->flight_plan->aircraft_short,
+                    //         'registration'  =>  $reg[1] ?? null,
+                    //         'route'         =>  $pilot->flight_plan->route,
+                    //         'elt'           =>  $elt_time,
+                    //         'fl'            =>  $pilot->flight_plan->altitude,
+                    //     ]
+                    // );
                 }
             }
         }
@@ -127,11 +131,12 @@ class OperationsCenter implements ShouldQueue
                     RTE: {$pilot->route}
                     ALT: {$pilot->fl}
                     DEP: {$pilot->dep} {$pilot->eobt}z
-                    ARR: {$pilot->dep} {$pilot->elt}z
+                    ARR: {$pilot->arr} {$pilot->elt}z
                     ALTN: {$altn}
                     RALT: {$ralt}
                     DISPATCHER: {$operator}");
 
+                $pilot->logon_time = Carbon::now();
                 $pilot->status = 1;
                 $pilot->hoppie_connected = 2;
                 $pilot->save();
@@ -139,6 +144,9 @@ class OperationsCenter implements ShouldQueue
                 // Aircraft has registered on hoppies in the air, so DEP weather needs to be skipped
                 if($pilot->dep_distance > 3){
                     $pilot->status = 2;
+                    $pilot->save();
+                } else { //still on the ground. Need to monitor the ATIS
+                    $pilot->dep_atis = 1;
                     $pilot->save();
                 }
             }
@@ -148,7 +156,7 @@ class OperationsCenter implements ShouldQueue
         // Aircraft is now 15mins from EOBT. Time to calculate the weather and send the information to the pilot
         // Requires Status = 1 to activate
         {
-            $pilots = OnlinePilots::where('status', 1)->where('hoppie_connected', '!=', 0)->where('online', 1)->get();
+            $pilots = OnlinePilots::where('status', 1)->where('hoppie_connected', '!=', 0)->where('online', 1)->where('logon_time', '<=', Carbon::now()->subMinutes(2))->get();
             foreach($pilots as $pilot){
 
                 // Time to collect all the weather required for this message, and compile it in a ready to go message to be sent via telex.
@@ -217,10 +225,13 @@ class OperationsCenter implements ShouldQueue
                     // No Enroute Alternates? Skip this bit
                     if($pilot->ralt == null){
                         $pilot->status = 4;
+                        $pilot->dep_atis = 0;
                         $pilot->save();
                     } else {
-                        $pilot->ralt_time = Carbon::now()->addMinutes(45);
+                        $pilot->ralt_time = Carbon::now()->addMinutes(40);
                         $pilot->status = 3;
+                        $pilot->dep_atis = 0;
+                        $pilot->last_atis_recieved = null;
                         $pilot->save();
                     }
                 }
@@ -358,6 +369,16 @@ class OperationsCenter implements ShouldQueue
         }
 
 
+        // ATIS Monitoring Section - Within requirements so time to activate the mode
+        {
+            $pilots = OnlinePilots::where('status', 5)->where('online', 1)->where('hoppie_connected', '!=', 0)->where('arr_distance', '<', 300)->get();
+            foreach($pilots as $pilot){
+                $pilot->arr_atis = 1;
+                $pilot->save();
+            }
+        }
+
+
         // Update with ATA message logoff message from Operations
         {
             $pilots = OnlinePilots::where('status', '>', 3)->where('status', '<', 10)->where('online', 1)->where('hoppie_connected', '!=', 0)->get();
@@ -378,6 +399,82 @@ class OperationsCenter implements ShouldQueue
 
                 $pilot->status = 10;
                 $pilot->save();
+                }
+            }
+        }
+
+
+        // ATIS Monitoring Section
+        {
+            // Departure ATIS
+            $dep_pilots = OnlinePilots::where('dep_atis', 1)->where('hoppie_connected', 2)->where('online', 1)->get();
+            foreach($dep_pilots as $p){
+                $atis_info = ATIS::where('icao', $p->dep)->first();
+                if($atis_info === null){
+                    continue;
+                }
+                // dd($atis_info);
+                
+                // ATIS LETTER has changed --- send a Hoppie Message
+                if($p->last_atis_recieved !== $atis_info->letter){
+
+                    if($atis_info->letter == "Offline"){
+                        $atis_section = "{$p->dep} ATIS OFFLINE. \nCROC NOW MONITORING AND WILL ADVISE OF ANY STATUS CHANGE.";
+                    } else {
+                        $atis_lines = json_decode($atis_info->content, true);
+                        $atis_section = implode("\n", $atis_lines);
+                    }
+
+                    $hoppieClient = new HoppieClient();
+
+                    $message = "{$p->callsign}, {$p->dep}-{$p->arr}";
+                    $message .= "\n MONITORING ATIS FOR {$p->dep}";
+
+                    $message .= "\n\n" . $atis_section;
+
+                    $message .= "\n\n Any ATIS updates will be sent via ACARS automatically";
+
+                    $sentTelex = $hoppieClient->sendTelex($p->callsign, $message);
+
+
+                    $p->last_atis_recieved = $atis_info->letter;
+                    $p->save();
+                }
+            }
+
+            // Arrival ATIS
+            $arr_pilots = OnlinePilots::where('arr_atis', 1)->where('hoppie_connected', 2)->where('online', 1)->get();
+            foreach($arr_pilots as $p){
+                $atis_info = ATIS::where('icao', $p->arr)->first();
+                if($atis_info === null){
+                    continue;
+                }
+                // dd($atis_info);
+                
+                // ATIS LETTER has changed --- send a Hoppie Message
+                if($p->last_atis_recieved !== $atis_info->letter){
+
+                    if($atis_info->letter == "Offline"){
+                        $atis_section = "{$p->arr} ATIS OFFLINE. \nCROC NOW MONITORING AND WILL ADVISE OF ANY STATUS CHANGE.";
+                    } else {
+                        $atis_lines = json_decode($atis_info->content, true);
+                        $atis_section = implode("\n", $atis_lines);
+                    }
+
+                    $hoppieClient = new HoppieClient();
+
+                    $message = "{$p->callsign}, {$p->dep}-{$p->arr}";
+                    $message .= "\n MONITORING ATIS FOR {$p->arr}";
+
+                    $message .= "\n\n" . $atis_section;
+
+                    $message .= "\n\n Any ATIS updates will be sent via ACARS automatically";
+
+                    $sentTelex = $hoppieClient->sendTelex($p->callsign, $message);
+
+
+                    $p->last_atis_recieved = $atis_info->letter;
+                    $p->save();
                 }
             }
         }

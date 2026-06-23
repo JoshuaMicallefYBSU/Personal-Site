@@ -271,9 +271,6 @@ class OperationsCenter implements ShouldQueue
                     }
                 }
 
-                $blocks[] = "Regards,
-                CROC";
-
                 $messages = [];
                 $current  = '';
 
@@ -330,9 +327,6 @@ class OperationsCenter implements ShouldQueue
                     if($pilot->alternate !== null) {
                         $blocks[] = "ALTERNATE WEATHER: {$pilot->altn}\n{$altn_metar}\n{$altn_taf}";
                     }
-
-                    $blocks[] = "Regards,
-                    CROC";
 
                     $messages = [];
                     $current  = '';

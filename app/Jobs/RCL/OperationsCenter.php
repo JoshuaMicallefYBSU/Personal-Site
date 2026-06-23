@@ -429,11 +429,9 @@ class OperationsCenter implements ShouldQueue
                     $hoppieClient = new HoppieClient();
 
                     $message = "{$p->callsign}, {$p->dep}-{$p->arr}";
-                    $message .= "\n MONITORING ATIS FOR {$p->dep}";
+                    $message .= "\n MONITORING DEP ATIS FOR {$p->dep}";
 
                     $message .= "\n\n" . $atis_section;
-
-                    $message .= "\n\n Any ATIS updates will be sent via ACARS automatically";
 
                     $sentTelex = $hoppieClient->sendTelex($p->callsign, $message);
 
@@ -465,11 +463,9 @@ class OperationsCenter implements ShouldQueue
                     $hoppieClient = new HoppieClient();
 
                     $message = "{$p->callsign}, {$p->dep}-{$p->arr}";
-                    $message .= "\n MONITORING ATIS FOR {$p->arr}";
+                    $message .= "\n MONITORING ARR ATIS FOR {$p->arr}";
 
                     $message .= "\n\n" . $atis_section;
-
-                    $message .= "\n\n Any ATIS updates will be sent via ACARS automatically";
 
                     $sentTelex = $hoppieClient->sendTelex($p->callsign, $message);
 

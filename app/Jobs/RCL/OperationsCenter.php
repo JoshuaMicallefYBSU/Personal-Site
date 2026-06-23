@@ -227,6 +227,7 @@ class OperationsCenter implements ShouldQueue
                     if($pilot->ralt == null){
                         $pilot->status = 4;
                         $pilot->dep_atis = 0;
+                        $pilot->last_atis_recieved = null;
                         $pilot->save();
                     } else {
                         $pilot->ralt_time = Carbon::now()->addMinutes(40);

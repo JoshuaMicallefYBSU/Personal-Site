@@ -401,7 +401,7 @@ class OperationsCenter implements ShouldQueue
 
         // ATIS Monitoring Section - Within requirements so time to activate the mode
         {
-            $pilots = OnlinePilots::where('status', 5)->where('online', 1)->where('hoppie_connected', '!=', 0)->where('arr_distance', '<', 400)->get();
+            $pilots = OnlinePilots::where('status', 5)->where('online', 1)->where('hoppie_connected', '!=', 0)->where('arr_distance', '<', 380)->get();
             foreach($pilots as $pilot){
                 $pilot->arr_atis = 1;
                 $pilot->save();

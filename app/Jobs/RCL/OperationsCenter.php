@@ -187,8 +187,8 @@ class OperationsCenter implements ShouldQueue
                     $blocks[] = "DEPARTURE ATIS: {$pilot->dep}";
                 } else {
                     $blocks[] = "DEPARTURE WEATHER: 
-                        ARR ATIS OFFLINE - CROC MONITORING FOR CHANGES.
-                        {$pilot->dep}\n{$dep_metar}\n{$dep_taf}";
+                        DEP ATIS OFFLINE - CROC MONITORING FOR CHANGES.
+                        \n\n{$dep_metar}\n{$dep_taf}";
                 }
 
                 $blocks[] = "ARRIVAL WEATHER: {$pilot->arr}\n{$arr_metar}\n{$arr_taf}";
@@ -356,7 +356,7 @@ class OperationsCenter implements ShouldQueue
                     } else {
                         $blocks[] = "ARRIVAL WEATHER: 
                         ARR ATIS OFFLINE - CROC MONITORING FOR CHANGES.
-                        {$pilot->arr}\n{$arr_metar}\n{$arr_taf}";
+                        \n\n{$arr_metar}\n{$arr_taf}";
                     }
 
                     if($pilot->alternate !== null) {

@@ -157,7 +157,7 @@ class OperationsCenter implements ShouldQueue
         // Aircraft is now 15mins from EOBT. Time to calculate the weather and send the information to the pilot
         // Requires Status = 1 to activate
         {
-            $pilots = OnlinePilots::where('status', 1)->where('hoppie_connected', '!=', 0)->where('online', 1)->where('logon_time', '<=', Carbon::now()->addMinutes(2))->get();
+            $pilots = OnlinePilots::where('status', 1)->where('hoppie_connected', '!=', 0)->where('online', 1)->where('logon_time', '<=', Carbon::now()->subMinutes(2))->get();
             foreach($pilots as $pilot){
 
                 $operator = $this->operators[array_rand($this->operators)];
@@ -439,7 +439,7 @@ class OperationsCenter implements ShouldQueue
         // ATIS Monitoring Section
         {
             // Departure ATIS
-            $dep_pilots = OnlinePilots::where('dep_atis', 1)->where('hoppie_connected', 2)->where('online', 1)->where('logon_time', '<=', Carbon::now()->addMinutes(3))->get();
+            $dep_pilots = OnlinePilots::where('dep_atis', 1)->where('hoppie_connected', 2)->where('online', 1)->where('logon_time', '<=', Carbon::now()->subMinutes(3))->get();
             foreach($dep_pilots as $p){
                 $atis_info = ATIS::where('icao', $p->dep)->first();
                 if($atis_info === null){

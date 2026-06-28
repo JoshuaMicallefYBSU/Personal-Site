@@ -439,7 +439,7 @@ class OperationsCenter implements ShouldQueue
         // ATIS Monitoring Section
         {
             // Departure ATIS
-            $dep_pilots = OnlinePilots::where('dep_atis', 1)->where('hoppie_connected', 2)->where('online', 1)->get();
+            $dep_pilots = OnlinePilots::where('dep_atis', 1)->where('hoppie_connected', 2)->where('online', 1)->where('logon_time', '<=', Carbon::now()->addMinutes(3))->get();
             foreach($dep_pilots as $p){
                 $atis_info = ATIS::where('icao', $p->dep)->first();
                 if($atis_info === null){

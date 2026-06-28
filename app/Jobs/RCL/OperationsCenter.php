@@ -49,11 +49,11 @@ class OperationsCenter implements ShouldQueue
 
         // Check all VATSIM Connections for RCL Pilots
         {
-            // $all_pilots = OnlinePilots::all();
-            // foreach($all_pilots as $p){
-            //     $p->online = 0;
-            //     $p->save();
-            // }
+            $all_pilots = OnlinePilots::all();
+            foreach($all_pilots as $p){
+                $p->online = 0;
+                $p->save();
+            }
 
             $vatsimData = new VATSIMClient();
             $pilots = $vatsimData->getRCLPilots();
@@ -80,25 +80,25 @@ class OperationsCenter implements ShouldQueue
                     $reg = [];
                     preg_match('/REG\/([A-Z0-9-]+)/', $pilot->flight_plan->remarks, $reg);
 
-                    // OnlinePilots::UpdateorCreate(['callsign' => $pilot->callsign, 'dep' => $pilot->flight_plan->departure, 'arr' => $pilot->flight_plan->arrival,],
-                    //     [
-                    //         'name'          =>  preg_replace('/\s*[A-Z]{4}$/', '', $pilot->name),
-                    //         'lat'           =>  $pilot->latitude,
-                    //         'lon'           =>  $pilot->longitude,
-                    //         'gs'            =>  $pilot->groundspeed,
-                    //         'altn'          =>  $pilot->flight_plan->alternate ?? null,
-                    //         'ralt'          =>  $ralt,
-                    //         'eobt'          =>  $pilot->flight_plan->deptime,
-                    //         'dep_distance'  =>  $dep_dist ?? null,
-                    //         'arr_distance'  =>  $arr_dist ?? null,
-                    //         'online'        =>  1,
-                    //         'aircraft'      =>  $pilot->flight_plan->aircraft_short,
-                    //         'registration'  =>  $reg[1] ?? null,
-                    //         'route'         =>  $pilot->flight_plan->route,
-                    //         'elt'           =>  $elt_time,
-                    //         'fl'            =>  $pilot->flight_plan->altitude,
-                    //     ]
-                    // );
+                    OnlinePilots::UpdateorCreate(['callsign' => $pilot->callsign, 'dep' => $pilot->flight_plan->departure, 'arr' => $pilot->flight_plan->arrival,],
+                        [
+                            'name'          =>  preg_replace('/\s*[A-Z]{4}$/', '', $pilot->name),
+                            'lat'           =>  $pilot->latitude,
+                            'lon'           =>  $pilot->longitude,
+                            'gs'            =>  $pilot->groundspeed,
+                            'altn'          =>  $pilot->flight_plan->alternate ?? null,
+                            'ralt'          =>  $ralt,
+                            'eobt'          =>  $pilot->flight_plan->deptime,
+                            'dep_distance'  =>  $dep_dist ?? null,
+                            'arr_distance'  =>  $arr_dist ?? null,
+                            'online'        =>  1,
+                            'aircraft'      =>  $pilot->flight_plan->aircraft_short,
+                            'registration'  =>  $reg[1] ?? null,
+                            'route'         =>  $pilot->flight_plan->route,
+                            'elt'           =>  $elt_time,
+                            'fl'            =>  $pilot->flight_plan->altitude,
+                        ]
+                    );
                 }
             }
         }

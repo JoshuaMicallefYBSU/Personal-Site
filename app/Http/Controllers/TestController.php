@@ -13,7 +13,7 @@ class TestController extends Controller
     public function Job()
     {
         // Dispatch the job
-        $job = RestartCROC::dispatch();
+        $job = OperationsCenter::dispatch();
 
         // Call the handle method directly to get the result synchronously
         $result = $job->handle();

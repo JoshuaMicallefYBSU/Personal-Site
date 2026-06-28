@@ -49,11 +49,11 @@ class OperationsCenter implements ShouldQueue
 
         // Check all VATSIM Connections for RCL Pilots
         {
-            $all_pilots = OnlinePilots::all();
-            foreach($all_pilots as $p){
-                $p->online = 0;
-                $p->save();
-            }
+            // $all_pilots = OnlinePilots::all();
+            // foreach($all_pilots as $p){
+            //     $p->online = 0;
+            //     $p->save();
+            // }
 
             $vatsimData = new VATSIMClient();
             $pilots = $vatsimData->getRCLPilots();
@@ -80,25 +80,25 @@ class OperationsCenter implements ShouldQueue
                     $reg = [];
                     preg_match('/REG\/([A-Z0-9-]+)/', $pilot->flight_plan->remarks, $reg);
 
-                    OnlinePilots::UpdateorCreate(['callsign' => $pilot->callsign, 'dep' => $pilot->flight_plan->departure, 'arr' => $pilot->flight_plan->arrival,],
-                        [
-                            'name'          =>  preg_replace('/\s*[A-Z]{4}$/', '', $pilot->name),
-                            'lat'           =>  $pilot->latitude,
-                            'lon'           =>  $pilot->longitude,
-                            'gs'            =>  $pilot->groundspeed,
-                            'altn'          =>  $pilot->flight_plan->alternate ?? null,
-                            'ralt'          =>  $ralt,
-                            'eobt'          =>  $pilot->flight_plan->deptime,
-                            'dep_distance'  =>  $dep_dist ?? null,
-                            'arr_distance'  =>  $arr_dist ?? null,
-                            'online'        =>  1,
-                            'aircraft'      =>  $pilot->flight_plan->aircraft_short,
-                            'registration'  =>  $reg[1] ?? null,
-                            'route'         =>  $pilot->flight_plan->route,
-                            'elt'           =>  $elt_time,
-                            'fl'            =>  $pilot->flight_plan->altitude,
-                        ]
-                    );
+                    // OnlinePilots::UpdateorCreate(['callsign' => $pilot->callsign, 'dep' => $pilot->flight_plan->departure, 'arr' => $pilot->flight_plan->arrival,],
+                    //     [
+                    //         'name'          =>  preg_replace('/\s*[A-Z]{4}$/', '', $pilot->name),
+                    //         'lat'           =>  $pilot->latitude,
+                    //         'lon'           =>  $pilot->longitude,
+                    //         'gs'            =>  $pilot->groundspeed,
+                    //         'altn'          =>  $pilot->flight_plan->alternate ?? null,
+                    //         'ralt'          =>  $ralt,
+                    //         'eobt'          =>  $pilot->flight_plan->deptime,
+                    //         'dep_distance'  =>  $dep_dist ?? null,
+                    //         'arr_distance'  =>  $arr_dist ?? null,
+                    //         'online'        =>  1,
+                    //         'aircraft'      =>  $pilot->flight_plan->aircraft_short,
+                    //         'registration'  =>  $reg[1] ?? null,
+                    //         'route'         =>  $pilot->flight_plan->route,
+                    //         'elt'           =>  $elt_time,
+                    //         'fl'            =>  $pilot->flight_plan->altitude,
+                    //     ]
+                    // );
                 }
             }
         }
@@ -157,8 +157,10 @@ class OperationsCenter implements ShouldQueue
         // Aircraft is now 15mins from EOBT. Time to calculate the weather and send the information to the pilot
         // Requires Status = 1 to activate
         {
-            $pilots = OnlinePilots::where('status', 1)->where('hoppie_connected', '!=', 0)->where('online', 1)->where('logon_time', '<=', Carbon::now()->subMinutes(2))->get();
+            $pilots = OnlinePilots::where('status', 1)->where('hoppie_connected', '!=', 0)->where('online', 1)->where('logon_time', '<=', Carbon::now()->addMinutes(2))->get();
             foreach($pilots as $pilot){
+
+                $operator = $this->operators[array_rand($this->operators)];
 
                 // Time to collect all the weather required for this message, and compile it in a ready to go message to be sent via telex.
                 $weather = new AviationWeatherClient();
@@ -173,14 +175,34 @@ class OperationsCenter implements ShouldQueue
                 $altn_metar = $altn_weather['metar'] ?? 'METAR N/A';
                 $altn_taf   = $altn_weather['taf'] ?? 'TAF N/A';
 
+                $dep_atis = ATIS::where('icao', $pilot->dep)->first();
+
                 $blocks = [];
                 $blocks[] = "WEATHER UPLINK FOR {$pilot->callsign},\n{$pilot->dep}-{$pilot->arr}, EOBT {$pilot->eobt}Z";
-                $blocks[] = "DEPARTURE WEATHER: {$pilot->dep}\n{$dep_metar}\n{$dep_taf}";
+                
+                // Departure block — use ATIS if online, otherwise METAR/TAF
+                if ($dep_atis && $dep_atis->letter !== 'Offline') {
+                    $atis_lines = json_decode($dep_atis->content, true);
+                    $atis_text  = implode("\n", $atis_lines);
+                    $blocks[] = "DEPARTURE ATIS: {$pilot->dep}";
+                } else {
+                    $monitoring = ($dep_atis && $dep_atis->letter === 'Offline')
+                        ? "\nDEP ATIS OFFLINE - CROC MONITORING FOR CHANGES."
+                        : '';
+                    $blocks[] = "DEPARTURE WEATHER: {$pilot->dep}\n{$dep_metar}\n{$dep_taf}{$monitoring}";
+                }
+
                 $blocks[] = "ARRIVAL WEATHER: {$pilot->arr}\n{$arr_metar}\n{$arr_taf}";
 
                 if($pilot->alternate !== null) {
                 $blocks[] = "ALTERNATE WEATHER: {$pilot->altn}\n{$altn_metar}\n{$altn_taf}";
                 }
+
+                if($pilot->ralt !== null){
+                $blocks[] = "ENROUTE ALTERNATES: {$pilot->ralt}";
+                }
+
+                $blocks[] = "RGRDS,\n{$operator}";
 
                 $messages = [];
                 $current  = '';
@@ -211,7 +233,6 @@ class OperationsCenter implements ShouldQueue
                 }
                 $pilot->status = 2;
                 $pilot->save();
-
             }
         }
 
@@ -321,9 +342,22 @@ class OperationsCenter implements ShouldQueue
                     $altn_metar = $altn_weather['metar'] ?? 'METAR N/A';
                     $altn_taf   = $altn_weather['taf'] ?? 'TAF N/A';
 
+                    $arr_atis = ATIS::where('icao', $pilot->arr)->first();
+
                     $blocks = [];
                     $blocks[] = "ARRIVAL WEATHER UPLINK FOR {$pilot->callsign},\n{$pilot->dep}-{$pilot->arr}";
-                    $blocks[] = "ARRIVAL WEATHER: {$pilot->arr}\n{$arr_metar}\n{$arr_taf}";
+                    
+                    // Arrival block — use ATIS if online, otherwise METAR/TAF
+                    if ($arr_atis && $arr_atis->letter !== 'Offline') {
+                        $atis_lines = json_decode($arr_atis->content, true);
+                        $atis_text  = implode("\n", $atis_lines);
+                        $blocks[] = "ARRIVAL ATIS: {$pilot->arr}";
+                    } else {
+                        $monitoring = ($arr_atis && $arr_atis->letter === 'Offline')
+                            ? "\nARR ATIS OFFLINE - CROC MONITORING FOR CHANGES."
+                            : '';
+                        $blocks[] = "ARRIVAL WEATHER: {$pilot->arr}\n{$arr_metar}\n{$arr_taf}{$monitoring}";
+                    }
 
                     if($pilot->alternate !== null) {
                         $blocks[] = "ALTERNATE WEATHER: {$pilot->altn}\n{$altn_metar}\n{$altn_taf}";
@@ -367,7 +401,7 @@ class OperationsCenter implements ShouldQueue
 
         // ATIS Monitoring Section - Within requirements so time to activate the mode
         {
-            $pilots = OnlinePilots::where('status', 5)->where('online', 1)->where('hoppie_connected', '!=', 0)->where('arr_distance', '<', 300)->get();
+            $pilots = OnlinePilots::where('status', 5)->where('online', 1)->where('hoppie_connected', '!=', 0)->where('arr_distance', '<', 400)->get();
             foreach($pilots as $pilot){
                 $pilot->arr_atis = 1;
                 $pilot->save();
@@ -417,7 +451,7 @@ class OperationsCenter implements ShouldQueue
                 if($p->last_atis_recieved !== $atis_info->letter){
 
                     if($atis_info->letter == "Offline"){
-                        $atis_section = "{$p->dep} ATIS OFFLINE. \nCROC NOW MONITORING AND WILL ADVISE OF ANY STATUS CHANGE.";
+                        $atis_section = "{$p->dep} ATIS NOW OFFLINE. \nCROC WILL ADVISE IF ATIS BECOMES AVAILABLE";
                     } else {
                         $atis_lines = json_decode($atis_info->content, true);
                         $atis_section = implode("\n", $atis_lines);
@@ -426,7 +460,7 @@ class OperationsCenter implements ShouldQueue
                     $hoppieClient = new HoppieClient();
 
                     $message = "{$p->callsign}, {$p->dep}-{$p->arr}";
-                    $message .= "\n MONITORING DEP ATIS FOR {$p->dep}";
+                    $message .= "\n CROC MONITORING {$p->dep} ATIS";
 
                     $message .= "\n\n" . $atis_section;
 
@@ -451,7 +485,7 @@ class OperationsCenter implements ShouldQueue
                 if($p->last_atis_recieved !== $atis_info->letter){
 
                     if($atis_info->letter == "Offline"){
-                        $atis_section = "{$p->arr} ATIS OFFLINE. \nCROC NOW MONITORING AND WILL ADVISE OF ANY STATUS CHANGE.";
+                        $atis_section = "{$p->arr} ATIS NOW OFFLINE. \nCROC WILL ADVISE IF ATIS BECOMES AVAILABLE.";
                     } else {
                         $atis_lines = json_decode($atis_info->content, true);
                         $atis_section = implode("\n", $atis_lines);
@@ -460,7 +494,7 @@ class OperationsCenter implements ShouldQueue
                     $hoppieClient = new HoppieClient();
 
                     $message = "{$p->callsign}, {$p->dep}-{$p->arr}";
-                    $message .= "\n MONITORING ARR ATIS FOR {$p->arr}";
+                    $message .= "\n CROC MONITORING {$p->arr} ATIS";
 
                     $message .= "\n\n" . $atis_section;
 
@@ -476,7 +510,7 @@ class OperationsCenter implements ShouldQueue
 
         // Delete offline connections after 10 minutes
         {
-            OnlinePilots::where('online', 0)->where('updated_at', '<=', Carbon::now()->subMinutes(10))->delete();
+            OnlinePilots::where('online', 0)->where('updated_at', '<=', Carbon::now()->subMinutes(60))->delete();
         }
     }
 

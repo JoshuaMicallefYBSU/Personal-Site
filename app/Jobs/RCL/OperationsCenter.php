@@ -186,10 +186,9 @@ class OperationsCenter implements ShouldQueue
                     $atis_text  = implode("\n", $atis_lines);
                     $blocks[] = "DEPARTURE ATIS: {$pilot->dep}";
                 } else {
-                    $monitoring = ($dep_atis && $dep_atis->letter === 'Offline')
-                        ? "\nDEP ATIS OFFLINE - CROC MONITORING FOR CHANGES."
-                        : '';
-                    $blocks[] = "DEPARTURE WEATHER: {$pilot->dep}\n{$dep_metar}\n{$dep_taf}{$monitoring}";
+                    $blocks[] = "DEPARTURE WEATHER: 
+                        ARR ATIS OFFLINE - CROC MONITORING FOR CHANGES.
+                        {$pilot->dep}\n{$dep_metar}\n{$dep_taf}{$monitoring}";
                 }
 
                 $blocks[] = "ARRIVAL WEATHER: {$pilot->arr}\n{$arr_metar}\n{$arr_taf}";
@@ -231,6 +230,8 @@ class OperationsCenter implements ShouldQueue
                         sleep(3);
                     }
                 }
+
+                $pilot->last_atis_recieved = $dep_atis->letter;
                 $pilot->status = 2;
                 $pilot->save();
             }
@@ -353,10 +354,9 @@ class OperationsCenter implements ShouldQueue
                         $atis_text  = implode("\n", $atis_lines);
                         $blocks[] = "ARRIVAL ATIS: {$pilot->arr}";
                     } else {
-                        $monitoring = ($arr_atis && $arr_atis->letter === 'Offline')
-                            ? "\nARR ATIS OFFLINE - CROC MONITORING FOR CHANGES."
-                            : '';
-                        $blocks[] = "ARRIVAL WEATHER: {$pilot->arr}\n{$arr_metar}\n{$arr_taf}{$monitoring}";
+                        $blocks[] = "ARRIVAL WEATHER: 
+                        ARR ATIS OFFLINE - CROC MONITORING FOR CHANGES.
+                        {$pilot->arr}\n{$arr_metar}\n{$arr_taf}{$monitoring}";
                     }
 
                     if($pilot->alternate !== null) {

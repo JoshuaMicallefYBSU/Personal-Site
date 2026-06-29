@@ -391,6 +391,7 @@ class OperationsCenter implements ShouldQueue
                         }
                     }
 
+                    $pilot->last_atis_recieved = $arr_atis->content;
                     $pilot->status = 5;
                     $pilot->save();
                 }

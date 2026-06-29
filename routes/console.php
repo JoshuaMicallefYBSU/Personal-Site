@@ -7,5 +7,5 @@ use App\Jobs\RCL\ATISUpdates;
 
 // Every Minute
 // Schedule::job(new ATCSessions)->everyMinute();
-Schedule::job(new OperationsCenter)->everyMinute();
-Schedule::job(new ATISUpdates)->everyMinute();
+// Schedule::job(new OperationsCenter)->everyMinute();
+// Schedule::job(new ATISUpdates)->everyMinute();

@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'focr' => [
+        'discord_webhook_url' => env('FOCR_DISCORD_WEBHOOK_URL'),
+        'discord_user_id' => env('FOCR_DISCORD_USER_ID'),
+        'redirect_url' => env('FOCR_REDIRECT_URL'),
+        'redirect_key' => env('FOCR_REDIRECT_KEY'),
+    ],
+
 ];

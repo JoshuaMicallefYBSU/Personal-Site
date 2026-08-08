@@ -1,13 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\VATPAC\VATPACController;
 use App\Http\Controllers\CTP\CTPController;
 use App\Http\Controllers\TestController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::post('/contact', [ContactController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('contact.send');
 
 Route::get('/test/vatsim-api', [TestController::class, 'Job'])->name('vatsimapi'); // Local Running Only
 
@@ -19,14 +22,6 @@ Route::prefix('vatpac')->group(function () {
         });
     });
 });
-Route::get('vatpac-iron-mic', function () {
-    return redirect('/vatpac/iron-mic');
-});
-
-
-// VATPAC Functions
-Route::get('vatpac/iron-mic', [VATPACController::class, 'ironMicView'])->name('vatpac.events.ironmic');
-
 
 Route::prefix('ctp')->group(function () {
     Route::prefix('oceanic')->group(function () {

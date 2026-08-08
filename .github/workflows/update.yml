@@ -20,4 +20,4 @@ jobs:
         username: personalsite@ozacars.xyz
         password: ${{ secrets.FTP_PASSWORD }}
         timeout: 120000
-        server-dir: joshuamicallef.xyz/
+        server-dir: personal-site/

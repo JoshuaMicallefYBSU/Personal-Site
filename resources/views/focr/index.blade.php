@@ -138,7 +138,7 @@
                             <li class="flex items-center justify-between gap-4 px-5 py-3.5">
                                 <div>
                                     <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ $movieRequest->title }} <span class="text-zinc-400 dark:text-zinc-500">({{ $movieRequest->release_year }})</span></p>
-                                    <p class="text-xs text-zinc-500 dark:text-zinc-500">Requested by {{ $movieRequest->name ?? 'Anonymous' }}</p>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-500">Requested by {{ $movieRequest->name ?? 'Anonymooose' }}</p>
                                     @if ($movieRequest->type !== 'Movie')
                                         <p class="text-xs text-zinc-500 dark:text-zinc-500">{{ $movieRequest->all_episodes ? 'All seasons/episodes' : $movieRequest->episodes }}</p>
                                     @endif

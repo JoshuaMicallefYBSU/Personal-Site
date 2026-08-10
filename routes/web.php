@@ -36,6 +36,7 @@ Route::prefix('focr')->name('focr.')->group(function () {
         ->middleware('throttle:5,1')
         ->name('store');
     Route::get('/delete/{token}', [FocrController::class, 'destroy'])->name('destroy');
+    Route::get('/available/{token}', [FocrController::class, 'markAvailable'])->name('available');
 
     // Requires ?key=<FOCR_REDIRECT_KEY> from .env — the path is visible here, but it's
     // useless without the secret key, which is never committed to the repo.

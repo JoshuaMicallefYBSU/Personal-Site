@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Focr;
 
 use App\Http\Controllers\Controller;
 use App\Models\MovieRequest;
+use Illuminate\Http\Client\Response as HttpResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -51,7 +52,9 @@ class FocrController extends Controller
             'release_year' => $validated['release_year'],
             'all_episodes' => $allEpisodes,
             'episodes' => $isEpisodic && ! $allEpisodes ? $validated['episodes'] : null,
+            'status' => MovieRequest::STATUS_REQUESTED,
             'delete_token' => Str::random(48),
+            'available_token' => Str::random(48),
         ]);
 
         $this->notifyDiscord($movieRequest);
@@ -59,9 +62,25 @@ class FocrController extends Controller
         return back()->with('focr_status', 'success');
     }
 
+    public function markAvailable(string $token): View
+    {
+        $movieRequest = MovieRequest::where('available_token', $token)->firstOrFail();
+
+        if ($movieRequest->status === MovieRequest::STATUS_REQUESTED) {
+            $movieRequest->update(['status' => MovieRequest::STATUS_AVAILABLE]);
+            $this->updateDiscordMessage($movieRequest);
+        }
+
+        return view('focr.available', [
+            'title' => $movieRequest->title,
+        ]);
+    }
+
     public function destroy(string $token): View
     {
         $movieRequest = MovieRequest::where('delete_token', $token)->firstOrFail();
+
+        $this->deleteDiscordMessage($movieRequest);
         $movieRequest->delete();
 
         return view('focr.deleted', [
@@ -85,12 +104,54 @@ class FocrController extends Controller
 
     private function notifyDiscord(MovieRequest $movieRequest): void
     {
-        $deleteUrl = route('focr.destroy', $movieRequest->delete_token);
+        $response = $this->postToWebhook([$this->buildRequestEmbed($movieRequest)], wait: true);
 
+        $messageId = $response?->json('id');
+
+        if ($messageId) {
+            $movieRequest->update(['discord_message_id' => $messageId]);
+        }
+    }
+
+    private function updateDiscordMessage(MovieRequest $movieRequest): void
+    {
+        if (! $movieRequest->discord_message_id) {
+            return;
+        }
+
+        $webhookUrl = config('services.focr.discord_webhook_url');
+
+        if (! $webhookUrl) {
+            return;
+        }
+
+        Http::patch("{$webhookUrl}/messages/{$movieRequest->discord_message_id}", [
+            'embeds' => [$this->buildRequestEmbed($movieRequest)],
+        ]);
+    }
+
+    private function deleteDiscordMessage(MovieRequest $movieRequest): void
+    {
+        if (! $movieRequest->discord_message_id) {
+            return;
+        }
+
+        $webhookUrl = config('services.focr.discord_webhook_url');
+
+        if (! $webhookUrl) {
+            return;
+        }
+
+        Http::delete("{$webhookUrl}/messages/{$movieRequest->discord_message_id}");
+    }
+
+    private function buildRequestEmbed(MovieRequest $movieRequest): array
+    {
         $fields = [
             ['name' => 'Requested By', 'value' => $movieRequest->name ?? 'Anonymous', 'inline' => true],
             ['name' => 'Type', 'value' => $movieRequest->type, 'inline' => true],
             ['name' => 'Release Year', 'value' => (string) $movieRequest->release_year, 'inline' => true],
+            ['name' => 'Status', 'value' => $movieRequest->status, 'inline' => true],
         ];
 
         if ($movieRequest->type !== 'Movie') {
@@ -101,12 +162,25 @@ class FocrController extends Controller
             ];
         }
 
-        $this->postToWebhook([[
+        if ($movieRequest->status === MovieRequest::STATUS_AVAILABLE) {
+            $deleteUrl = route('focr.destroy', $movieRequest->delete_token);
+
+            return [
+                'title' => 'Available: ' . $movieRequest->title,
+                'color' => 0x22c55e,
+                'fields' => $fields,
+                'description' => "✅ Now available. [Remove this request]({$deleteUrl})",
+            ];
+        }
+
+        $availableUrl = route('focr.available', $movieRequest->available_token);
+
+        return [
             'title' => 'New Request: ' . $movieRequest->title,
             'color' => 0x6366f1,
             'fields' => $fields,
-            'description' => "[Click here to delete this request]({$deleteUrl})",
-        ]]);
+            'description' => "[Mark as available]({$availableUrl})",
+        ];
     }
 
     private function notifyRedirectAccess(Request $request): void
@@ -118,22 +192,22 @@ class FocrController extends Controller
                 ['name' => 'IP Address', 'value' => $request->ip(), 'inline' => true],
                 ['name' => 'User Agent', 'value' => $request->userAgent() ?: 'Unknown', 'inline' => false],
             ],
-        ]]);
+        ]], webhookUrl: config('services.focr.discord_second_webhook_url'), mention: false);
     }
 
-    private function postToWebhook(array $embeds): void
+    private function postToWebhook(array $embeds, bool $wait = false, ?string $webhookUrl = null, bool $mention = true): ?HttpResponse
     {
-        $webhookUrl = config('services.focr.discord_webhook_url');
+        $webhookUrl ??= config('services.focr.discord_webhook_url');
 
         if (! $webhookUrl) {
-            Log::warning('FOCR_DISCORD_WEBHOOK_URL is not set; skipping Discord notification.');
+            Log::warning('FOCR Discord webhook URL is not set; skipping Discord notification.');
 
-            return;
+            return null;
         }
 
-        $userId = config('services.focr.discord_user_id');
+        $userId = $mention ? config('services.focr.discord_user_id') : null;
 
-        Http::post($webhookUrl, [
+        return Http::post($wait ? "{$webhookUrl}?wait=true" : $webhookUrl, [
             'content' => $userId ? "<@{$userId}>" : null,
             'allowed_mentions' => ['users' => $userId ? [$userId] : []],
             'embeds' => $embeds,

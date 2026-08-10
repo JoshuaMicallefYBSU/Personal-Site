@@ -143,7 +143,14 @@
                                         <p class="text-xs text-zinc-500 dark:text-zinc-500">{{ $movieRequest->all_episodes ? 'All seasons/episodes' : $movieRequest->episodes }}</p>
                                     @endif
                                 </div>
-                                <span class="shrink-0 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">{{ $movieRequest->type }}</span>
+                                <div class="flex shrink-0 flex-col items-end gap-1.5">
+                                    <span class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">{{ $movieRequest->type }}</span>
+                                    @if ($movieRequest->status === \App\Models\MovieRequest::STATUS_AVAILABLE)
+                                        <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">Available</span>
+                                    @else
+                                        <span class="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">Requested</span>
+                                    @endif
+                                </div>
                             </li>
                         @endforeach
                     </ul>

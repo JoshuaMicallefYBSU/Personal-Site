@@ -22,7 +22,9 @@ class FocrController extends Controller
     {
         return view('focr.index', [
             'types' => self::TYPES,
-            'requests' => MovieRequest::latest()->get(),
+            'requests' => MovieRequest::orderByRaw("FIELD(status, 'Available', 'Requested')")
+                ->orderBy('title')
+                ->get(),
         ]);
     }
 
